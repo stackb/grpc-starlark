@@ -1,0 +1,71 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load(":platforms.bzl", "platforms")
+
+go_library(
+    name = "grpc-starlark_lib",
+    srcs = [
+        "config.go",
+        "main.go",
+    ],
+    importpath = "github.com/stackb/grpc-starlark/cmd/grpc-starlark",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//pkg/program",
+        "//pkg/server",
+        "//pkg/starlarkgrpc",
+        "@org_golang_google_protobuf//proto",
+        "@org_golang_google_protobuf//reflect/protodesc",
+        "@org_golang_google_protobuf//reflect/protoregistry",
+        "@org_golang_google_protobuf//types/descriptorpb",
+    ],
+)
+
+go_binary(
+    name = "grpc-starlark",
+    embed = [":grpc-starlark_lib"],
+    visibility = ["//visibility:public"],
+)
+
+[
+    go_binary(
+        name = "grpc-starlark_%s_%s" % (
+            platform.os,
+            platform.arch,
+        ),
+        embed = [":grpc-starlark_lib"],
+        gc_linkopts = platform.gc_linkopts,
+        goarch = platform.arch,
+        goos = platform.os,
+        pure = "on",
+        static = "on",
+        visibility = ["//visibility:public"],
+    )
+    for platform in platforms
+]
+
+[
+    genrule(
+        name = "grpc-starlark_%s_%s_zip" % (
+            platform.os,
+            platform.arch,
+        ),
+        srcs = ["grpc-starlark_%s_%s" % (
+            platform.os,
+            platform.arch,
+        )],
+        outs = ["grpc-starlark_%s_%s.zip" % (
+            platform.os,
+            platform.arch,
+        )],
+        cmd = """
+    cp $(location grpc-starlark_{os}_{arch}) grpc-starlark
+    $(location @bazel_tools//tools/zip:zipper) c $@ grpc-starlark
+    """.format(
+            arch = platform.arch,
+            os = platform.os,
+        ),
+        tools = ["@bazel_tools//tools/zip:zipper"],
+        visibility = ["//visibility:public"],
+    )
+    for platform in platforms
+]

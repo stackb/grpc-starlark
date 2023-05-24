@@ -1,0 +1,1 @@
+--report_dir <filename> is required

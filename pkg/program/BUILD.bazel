@@ -1,0 +1,18 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "program",
+    srcs = ["program.go"],
+    importpath = "github.com/stackb/grpc-starlark/pkg/program",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/starlarkgrpc",
+        "@com_github_stripe_skycfg//go/protomodule",
+        "@net_starlark_go//lib/proto",
+        "@net_starlark_go//starlark",
+        "@net_starlark_go//starlarkstruct",
+        "@org_golang_google_protobuf//reflect/protoreflect",
+        "@org_golang_google_protobuf//reflect/protoregistry",
+        "@org_golang_google_protobuf//types/dynamicpb",
+    ],
+)
