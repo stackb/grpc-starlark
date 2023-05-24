@@ -15,20 +15,18 @@ import (
 // HandlerMap is a map of Handler implementations keyed by method fullname.
 type HandlerMap map[string]*Handler
 
+type HandlerRegistrationFunction func(handler *Handler) error
+
 // Handler represents a rule implemented in starlark that implements the GrpcHandler.
 type Handler struct {
 	name     string
 	reporter func(thread *starlark.Thread, msg string)
 	// errorReporter func(msg string, args ...interface{}) error
-	handler *starlarkstruct.Struct
+	fn starlark.Callable
 }
 
 func (h *Handler) Name() string {
-	val, err := h.handler.Attr("name")
-	if err != nil {
-		log.Fatalf(".name access error: %v", err)
-	}
-	return val.(*starlark.String).GoString()
+	return h.name
 }
 
 func (h *Handler) Handle(method protoreflect.MethodDescriptor, request protoreflect.ProtoMessage, ss grpc.ServerStream) (proto.Message, error) {
@@ -57,17 +55,11 @@ func (h *Handler) Handle(method protoreflect.MethodDescriptor, request protorefl
 		args = starlark.Tuple{msg, context}
 	}
 
-	val, err := h.handler.Attr("impl")
-	if err != nil {
-		return nil, fmt.Errorf(".impl access error: %w", err)
-	}
-	callable := val.(starlark.Callable)
-
 	thread := new(starlark.Thread)
 	thread.Print = h.reporter
-	resp, err := starlark.Call(thread, callable, args, []starlark.Tuple{})
+	resp, err := starlark.Call(thread, h.fn, args, []starlark.Tuple{})
 	if err != nil {
-		return nil, fmt.Errorf("%s error: %w", callable.String(), err)
+		return nil, fmt.Errorf("%s error: %w", h.fn.String(), err)
 	}
 
 	out, ok := protomodule.AsProtoMessage(resp)
@@ -85,34 +77,39 @@ func (h *Handler) Handle(method protoreflect.MethodDescriptor, request protorefl
 	}
 }
 
-func newHandlerFunction(handlers HandlerMap) goStarlarkFunction {
-	return func(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-		var name string
-		var implementation starlark.Callable
-
-		if err := starlark.UnpackArgs("Handler", args, kwargs,
-			"name", &name,
-			"impl", &implementation,
-		); err != nil {
+func newRegisterHandlersFunction(callback HandlerRegistrationFunction) goStarlarkFunction {
+	return func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+		var mappings *starlark.Dict
+		if err := starlark.UnpackPositionalArgs(fn.Name(), args, kwargs, 1, &mappings); err != nil {
 			return nil, err
 		}
 
-		handler := starlarkstruct.FromStringDict(
-			Symbol("Handler"),
-			starlark.StringDict{
-				"name": starlark.String(name),
-				"impl": implementation,
-			},
-		)
-
-		handlers[name] = &Handler{
-			name:     name,
-			handler:  handler,
-			reporter: thread.Print,
-			// errorReporter: newErrorf,
+		for _, key := range mappings.Keys() {
+			name, ok := key.(starlark.String)
+			if !ok {
+				return nil, fmt.Errorf("%s: register error: dict key should be a fully-qualified method name (got %T)", fn.Name(), key)
+			}
+			value, ok, err := mappings.Get(key)
+			if err != nil {
+				log.Printf("registration mapping error: get %s failed: %v", key, err)
+				continue
+			}
+			if !ok {
+				panic(fmt.Sprintf("registration mapping lookup: lookup %s failed", key))
+			}
+			callable, ok := value.(starlark.Callable)
+			if !ok {
+				return nil, fmt.Errorf("%s: register error: dict value should be function (got %s)", fn.Name(), value.Type())
+			}
+			handler := &Handler{
+				name:     name.GoString(),
+				fn:       callable,
+				reporter: thread.Print,
+			}
+			callback(handler)
 		}
 
-		return handler, nil
+		return starlark.None, nil
 	}
 }
 

@@ -5,12 +5,12 @@ import (
 	"go.starlark.net/starlarkstruct"
 )
 
-func NewModule(handlers HandlerMap) *starlarkstruct.Module {
+func NewModule(onRegister HandlerRegistrationFunction) *starlarkstruct.Module {
 	return &starlarkstruct.Module{
 		Name: "grpc",
 		Members: starlark.StringDict{
-			"Handler": starlark.NewBuiltin("Handler", newHandlerFunction(handlers)),
-			"Error":   starlark.NewBuiltin("Error", newErrorFunction()),
+			"RegisterHandlers": starlark.NewBuiltin("RegisterHandlers", newRegisterHandlersFunction(onRegister)),
+			"Error":            starlark.NewBuiltin("Error", newErrorFunction()),
 		},
 	}
 }

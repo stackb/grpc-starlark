@@ -8,8 +8,8 @@ def decode_feature(json_str):
 def decode_feature_database(json_str):
     return proto.decode_json(routeguidepb.FeatureDatabase, json_str)
 
-def handle_routeguide_get_feature(_point, _context):
-    """handle_routeguide_get_feature implements a unary method handler
+def get_feature(_point, _context):
+    """get_feature implements a unary method handler
 
     Args:
         _point: the requested Point
@@ -28,8 +28,8 @@ def handle_routeguide_get_feature(_point, _context):
     }
     """)
 
-def handle_routeguide_list_features(_rectangle, context):
-    """handle_routeguide_list_features implements a server streaming handler
+def list_features(_rectangle, context):
+    """list_features implements a server streaming handler
 
     Args:
         _rectangle: the rectangle to get features within
@@ -68,8 +68,8 @@ def handle_routeguide_list_features(_rectangle, context):
     for feature in db.feature:
         context.send(feature)
 
-def handle_routeguide_record_route(_, context):
-    """handle_routeguide_record_route implements a client streaming handler
+def record_route(_, context):
+    """record_route implements a client streaming handler
 
     Args:
         _: the request object, which in this case is None
@@ -85,8 +85,8 @@ def handle_routeguide_record_route(_, context):
         point_count = len(points),
     )
 
-def handle_routeguide_route_chat(_, context):
-    """handle_routeguide_route_chat implements a bidirectional streaming handler
+def route_chat(_, context):
+    """route_chat implements a bidirectional streaming handler
 
     Args:
         _: the request object, which in this case is None
@@ -100,26 +100,9 @@ def handle_routeguide_route_chat(_, context):
         notes.append(note)
         context.send(note)
 
-# Unary
-grpc.Handler(
-    name = "/example.routeguide.RouteGuide/GetFeature",
-    impl = handle_routeguide_get_feature,
-)
-
-# Server Streaming
-grpc.Handler(
-    name = "/example.routeguide.RouteGuide/ListFeatures",
-    impl = handle_routeguide_list_features,
-)
-
-# Client Streaming
-grpc.Handler(
-    name = "/example.routeguide.RouteGuide/RecordRoute",
-    impl = handle_routeguide_record_route,
-)
-
-# Bidi Streaming
-grpc.Handler(
-    name = "/example.routeguide.RouteGuide/RouteChat",
-    impl = handle_routeguide_route_chat,
-)
+grpc.RegisterHandlers({
+    "/example.routeguide.RouteGuide/GetFeature": get_feature,
+    "/example.routeguide.RouteGuide/ListFeatures": list_features,
+    "/example.routeguide.RouteGuide/RecordRoute": record_route,
+    "/example.routeguide.RouteGuide/RouteChat": route_chat,
+})

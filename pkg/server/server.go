@@ -22,9 +22,9 @@ type Server struct {
 	handlers starlarkgrpc.HandlerMap
 }
 
-func New(files *protoregistry.Files, handlers starlarkgrpc.HandlerMap) (*Server, error) {
+func New(files *protoregistry.Files) (*Server, error) {
 	s := &Server{
-		handlers: handlers,
+		handlers: make(starlarkgrpc.HandlerMap),
 		methods:  make(map[string]protoreflect.MethodDescriptor),
 	}
 	s.server = grpc.NewServer(grpc.UnaryInterceptor(s.InterceptUnary))
@@ -45,53 +45,49 @@ func New(files *protoregistry.Files, handlers starlarkgrpc.HandlerMap) (*Server,
 						ClientStreams: true,
 						Handler:       s.HandleStream,
 					})
-					log.Println("Registered bidi stream:", name)
+					log.Printf("Registered %s (bidi stream):", name)
 				} else if method.IsStreamingServer() {
 					gsd.Streams = append(gsd.Streams, grpc.StreamDesc{
 						StreamName:    string(method.Name()),
 						ServerStreams: true,
 						Handler:       s.HandleStream,
 					})
-					log.Println("Registered server stream:", name)
+					log.Printf("Registered %s (server stream):", name)
 				} else if method.IsStreamingClient() {
 					gsd.Streams = append(gsd.Streams, grpc.StreamDesc{
 						StreamName:    string(method.Name()),
 						ClientStreams: true,
 						Handler:       s.HandleStream,
 					})
-					log.Println("Registered client stream:", name)
+					log.Printf("Registered %s (client stream):", name)
 				} else {
 					gsd.Methods = append(gsd.Methods, grpc.MethodDesc{
 						MethodName: string(method.Name()),
 						Handler:    s.HandleMethod,
 					})
-					log.Println("Registered unary method:", name)
+					log.Printf("Registered %s (unary method):", name)
 				}
 				s.methods[name] = method
 			}
-			log.Println("Registered grpc service:", sd.FullName())
 
 			s.server.RegisterService(&gsd, s)
 		}
 		return true
 	})
 
-	for name := range handlers {
-		if _, ok := s.methods[name]; ok {
-			log.Printf("Registered handler for %s", name)
-		} else {
-			return nil, fmt.Errorf("error: starlark handler %q has no matching gRPC method", name)
-		}
-	}
-
 	return s, nil
 }
 
-func (s *Server) Start(port string) error {
-	l, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%s", port))
-	if err != nil {
-		return fmt.Errorf("failed to listen to port %s: %w", port, err)
+func (s *Server) OnHandler(handler *starlarkgrpc.Handler) error {
+	if _, ok := s.methods[handler.Name()]; ok {
+		log.Printf("Registered handler for %s", handler.Name())
+		s.handlers[handler.Name()] = handler
+		return nil
 	}
+	return fmt.Errorf("error: starlark handler %q has no matching gRPC method", handler.Name())
+}
+
+func (s *Server) Start(l net.Listener) error {
 	go s.server.Serve(l)
 	return nil
 }

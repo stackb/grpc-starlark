@@ -16,17 +16,17 @@ import (
 	"github.com/stackb/grpc-starlark/pkg/starlarkgrpc"
 )
 
-func LoadFile(filename string, reporter func(msg string), errorReporter func(err error), files *protoregistry.Files) (starlarkgrpc.HandlerMap, error) {
+func LoadFile(filename string, reporter func(msg string), errorReporter func(err error), files *protoregistry.Files, onHandler starlarkgrpc.HandlerRegistrationFunction) error {
 	f, err := os.Open(filename)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open rule file %q: %w", filename, err)
+		return fmt.Errorf("failed to open rule file %q: %w", filename, err)
 	}
 	defer f.Close()
 
-	return Load(filename, f, reporter, errorReporter, files)
+	return Load(filename, f, reporter, errorReporter, files, onHandler)
 }
 
-func Load(filename string, src interface{}, reporter func(msg string), errorReporter func(err error), files *protoregistry.Files) (starlarkgrpc.HandlerMap, error) {
+func Load(filename string, src interface{}, reporter func(msg string), errorReporter func(err error), files *protoregistry.Files, onHandler starlarkgrpc.HandlerRegistrationFunction) error {
 	// newErrorf := func(msg string, args ...interface{}) error {
 	// 	err := fmt.Errorf(filename+": "+msg, args...)
 	// 	errorReporter(err)
@@ -34,15 +34,14 @@ func Load(filename string, src interface{}, reporter func(msg string), errorRepo
 	// 	return err
 	// }
 
-	handlers := make(starlarkgrpc.HandlerMap)
-	predeclared := NewPredeclared(handlers, files)
+	predeclared := NewPredeclared(onHandler, files)
 
 	_, _, err := newProgram(filename, src, predeclared, reporter, errorReporter, files)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return handlers, nil
+	return nil
 }
 
 func newProgram(filename string, src interface{}, predeclared starlark.StringDict, reporter func(msg string), errorReporter func(err error), files *protoregistry.Files) (*starlark.StringDict, *starlark.Thread, error) {
@@ -71,7 +70,7 @@ func newProgram(filename string, src interface{}, predeclared starlark.StringDic
 	return &globals, thread, nil
 }
 
-func NewPredeclared(handlers starlarkgrpc.HandlerMap, files *protoregistry.Files) starlark.StringDict {
+func NewPredeclared(onHandler starlarkgrpc.HandlerRegistrationFunction, files *protoregistry.Files) starlark.StringDict {
 	var types protoregistry.Types
 	files.RangeFiles(func(fd protoreflect.FileDescriptor) bool {
 		messages := fd.Messages()
@@ -85,7 +84,7 @@ func NewPredeclared(handlers starlarkgrpc.HandlerMap, files *protoregistry.Files
 		return true
 	})
 	return starlark.StringDict{
-		"grpc":   starlarkgrpc.NewModule(handlers),
+		"grpc":   starlarkgrpc.NewModule(onHandler),
 		"proto":  protomodule.NewModule(&types),
 		"struct": starlark.NewBuiltin("struct", starlarkstruct.Make),
 	}
