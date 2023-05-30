@@ -1,0 +1,20 @@
+{
+  "name": "example-module",
+  "version": "1.0.0",
+  "description": "Example npm module that consumes grpc-starlark library.",
+  "main": "dist/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/express": "^4.17.1",
+    "typescript": "^5.0.4"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "^1.8.14",
+    "@grpc/proto-loader": "^0.7.7",
+    "express": "^4.17.1"
+  }
+}
