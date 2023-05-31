@@ -3,7 +3,6 @@ package program
 import (
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/stripe/skycfg/go/protomodule"
 	"go.starlark.net/lib/proto"
@@ -17,17 +16,7 @@ import (
 	"github.com/stackb/grpc-starlark/pkg/starlarkgrpc"
 )
 
-func LoadFile(filename string, reporter func(msg string), errorReporter func(err error), files *protoregistry.Files, onHandler starlarkgrpc.MethodHandlerRegistrationFunction) error {
-	f, err := os.Open(filename)
-	if err != nil {
-		return fmt.Errorf("failed to open rule file %q: %w", filename, err)
-	}
-	defer f.Close()
-
-	return Load(filename, f, reporter, errorReporter, files, onHandler)
-}
-
-func Load(filename string, src interface{}, reporter func(msg string), errorReporter func(err error), files *protoregistry.Files, onHandler starlarkgrpc.MethodHandlerRegistrationFunction) error {
+func Load(filename string, src interface{}, reporter func(msg string), errorReporter func(err error), files *protoregistry.Files) error {
 	// newErrorf := func(msg string, args ...interface{}) error {
 	// 	err := fmt.Errorf(filename+": "+msg, args...)
 	// 	errorReporter(err)
@@ -35,7 +24,7 @@ func Load(filename string, src interface{}, reporter func(msg string), errorRepo
 	// 	return err
 	// }
 
-	predeclared := NewPredeclared(onHandler, files)
+	predeclared := NewPredeclared(files)
 
 	_, _, err := newProgram(filename, src, predeclared, reporter, errorReporter, files)
 	if err != nil {
@@ -45,7 +34,14 @@ func Load(filename string, src interface{}, reporter func(msg string), errorRepo
 	return nil
 }
 
-func newProgram(filename string, src interface{}, predeclared starlark.StringDict, reporter func(msg string), errorReporter func(err error), files *protoregistry.Files) (*starlark.StringDict, *starlark.Thread, error) {
+func newProgram(
+	filename string,
+	src interface{},
+	predeclared starlark.StringDict,
+	reporter func(msg string),
+	errorReporter func(err error),
+	files *protoregistry.Files,
+) (*starlark.StringDict, *starlark.Thread, error) {
 	newErrorf := func(msg string, args ...interface{}) error {
 		err := fmt.Errorf(filename+": "+msg, args...)
 		errorReporter(err)
@@ -71,7 +67,7 @@ func newProgram(filename string, src interface{}, predeclared starlark.StringDic
 	return &globals, thread, nil
 }
 
-func NewPredeclared(onHandler starlarkgrpc.MethodHandlerRegistrationFunction, files *protoregistry.Files) starlark.StringDict {
+func NewPredeclared(files *protoregistry.Files) starlark.StringDict {
 	var types protoregistry.Types
 	files.RangeFiles(func(fd protoreflect.FileDescriptor) bool {
 		messages := fd.Messages()
@@ -82,11 +78,19 @@ func NewPredeclared(onHandler starlarkgrpc.MethodHandlerRegistrationFunction, fi
 			types.RegisterMessage(msgType)
 			log.Println("Registered proto message type:", md.FullName())
 		}
+		enums := fd.Enums()
+		for i := 0; i < enums.Len(); i++ {
+			ed := enums.Get(i)
+			enumType := dynamicpb.NewEnumType(ed)
+			types.RegisterEnum(enumType)
+			log.Println("Registered proto enum type:", ed.FullName())
+		}
 		return true
 	})
+
 	return starlark.StringDict{
 		"os":     pkgos.Module,
-		"grpc":   starlarkgrpc.NewModule(onHandler),
+		"grpc":   starlarkgrpc.Module,
 		"proto":  protomodule.NewModule(&types),
 		"struct": starlark.NewBuiltin("struct", starlarkstruct.Make),
 	}

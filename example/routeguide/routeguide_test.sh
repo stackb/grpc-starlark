@@ -4,7 +4,6 @@ set -euo pipefail
 
 server_pid=0
 server_address="localhost:3444"
-server_address_file=$(mktemp "${TEST_TMPDIR}/tmp.stderr.XXXXXX")
 server_exe="./cmd/grpc-starlark/grpc-starlark_/grpc-starlark"
 protoset_file="./example/routeguide/routeguide_proto_descriptor.pb"
 handlers_file="./example/routeguide/routeguide.grpc.star"
@@ -76,24 +75,10 @@ EOM
 function start_server {
     ROUTEGUIDE_ADDRESS="${server_address}" \
     "${server_exe}" \
-        --load="${handlers_file}" \
-        --protoset="${protoset_file}" \        &
+        --protoset="${protoset_file}" \
+        "${handlers_file}" \
+        &
     server_pid=$!
-}
-
-# function get_static_server_address {
-#     server_address='localhost:3444'
-# }
-
-function get_server_address {
-    server_address=$(cat "${server_address_file}")
-    if [[ "${server_address}" ]]
-    then
-        echo "server_address: ${server_address}"
-    else
-        echo "failed to get server address"
-        exit 1
-    fi
 }
 
 function stop_server {
@@ -102,8 +87,6 @@ function stop_server {
 
 function main {
     start_server
-    # sleep 0.1
-    # get_static_server_address
 
     echo "========================================"
     test_get_feature
@@ -113,6 +96,7 @@ function main {
     test_record_route
     echo "========================================"
     test_route_chat
+
     stop_server
 }
 

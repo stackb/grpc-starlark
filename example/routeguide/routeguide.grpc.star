@@ -108,13 +108,6 @@ def route_chat(_, context):
         notes.append(note)
         context.send(note)
 
-grpc.RegisterHandlers({
-    "/example.routeguide.RouteGuide/GetFeature": get_feature,
-    "/example.routeguide.RouteGuide/ListFeatures": list_features,
-    "/example.routeguide.RouteGuide/RecordRoute": record_route,
-    "/example.routeguide.RouteGuide/RouteChat": route_chat,
-})
-
 server = grpc.Server()
 
 server.register("example.routeguide.RouteGuide", {
@@ -128,3 +121,6 @@ server.start(grpc.Listener(
     network = "tcp",
     address = os.getenv("ROUTEGUIDE_ADDRESS"),
 ))
+
+# client = grpc.Client("example.routeguide.RouteGuide")
+# client.GetFeature()
