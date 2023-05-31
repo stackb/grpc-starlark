@@ -11,7 +11,6 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//pkg/program",
-        "//pkg/server",
         "@org_golang_google_protobuf//proto",
         "@org_golang_google_protobuf//reflect/protodesc",
         "@org_golang_google_protobuf//reflect/protoreflect",
