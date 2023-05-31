@@ -42,18 +42,18 @@ jobs:
           --bazelrc=.github/workflows/ci.bazelrc
           --bazelrc=.bazelrc
           build
-          //cmd/aquerydiff:all
+          //cmd/grpc-starlark:all
 
       - name: Prepare release assets
         env:
           # Bazelisk will download bazel to here
           RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
         run: >-
-          cp bazel-bin/cmd/aquerydiff/aquerydiff_darwin_amd64.zip aquerydiff_darwin_amd64.${{ env.RELEASE_VERSION }}.zip &&
-          cp bazel-bin/cmd/aquerydiff/aquerydiff_darwin_arm64.zip aquerydiff_darwin_arm64.${{ env.RELEASE_VERSION }}.zip &&
-          cp bazel-bin/cmd/aquerydiff/aquerydiff_linux_amd64.zip aquerydiff_linux_amd64.${{ env.RELEASE_VERSION }}.zip &&
-          cp bazel-bin/cmd/aquerydiff/aquerydiff_linux_arm64.zip aquerydiff_linux_arm64.${{ env.RELEASE_VERSION }}.zip &&
-          cp bazel-bin/cmd/aquerydiff/aquerydiff_windows_amd64.zip aquerydiff_windows_amd64.${{ env.RELEASE_VERSION }}.zip &&
+          cp bazel-bin/cmd/grpc-starlark/grpc-starlark_darwin_amd64.zip grpc-starlark_darwin_amd64.${{ env.RELEASE_VERSION }}.zip &&
+          cp bazel-bin/cmd/grpc-starlark/grpc-starlark_darwin_arm64.zip grpc-starlark_darwin_arm64.${{ env.RELEASE_VERSION }}.zip &&
+          cp bazel-bin/cmd/grpc-starlark/grpc-starlark_linux_amd64.zip grpc-starlark_linux_amd64.${{ env.RELEASE_VERSION }}.zip &&
+          cp bazel-bin/cmd/grpc-starlark/grpc-starlark_linux_arm64.zip grpc-starlark_linux_arm64.${{ env.RELEASE_VERSION }}.zip &&
+          cp bazel-bin/cmd/grpc-starlark/grpc-starlark_windows_amd64.zip grpc-starlark_windows_amd64.${{ env.RELEASE_VERSION }}.zip &&
           echo "done"
 
       - name: Release
@@ -62,8 +62,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            aquerydiff_darwin_amd64.${{ env.RELEASE_VERSION }}.zip
-            aquerydiff_darwin_arm64.${{ env.RELEASE_VERSION }}.zip
-            aquerydiff_linux_amd64.${{ env.RELEASE_VERSION }}.zip
-            aquerydiff_linux_arm64.${{ env.RELEASE_VERSION }}.zip
-            aquerydiff_windows_amd64.${{ env.RELEASE_VERSION }}.zip
+            grpc-starlark_darwin_amd64.${{ env.RELEASE_VERSION }}.zip
+            grpc-starlark_darwin_arm64.${{ env.RELEASE_VERSION }}.zip
+            grpc-starlark_linux_amd64.${{ env.RELEASE_VERSION }}.zip
+            grpc-starlark_linux_arm64.${{ env.RELEASE_VERSION }}.zip
+            grpc-starlark_windows_amd64.${{ env.RELEASE_VERSION }}.zip
