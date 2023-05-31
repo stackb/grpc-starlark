@@ -74,6 +74,7 @@ def list_features(_rectangle, context):
 }
     """)
     for feature in db.feature:
+        thread.sleep(500)
         context.send(feature)
 
 def record_route(_, context):
