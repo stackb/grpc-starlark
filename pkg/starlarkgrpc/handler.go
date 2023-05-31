@@ -12,24 +12,25 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
-// HandlerMap is a map of Handler implementations keyed by method fullname.
-type HandlerMap map[string]*Handler
+// MethodHandlerMap is a map of Handler implementations keyed by method fullname.
+type MethodHandlerMap map[string]*MethodHandler
 
-type HandlerRegistrationFunction func(handler *Handler) error
+type MethodHandlerRegistrationFunction func(handler *MethodHandler) error
 
-// Handler represents a rule implemented in starlark that implements the GrpcHandler.
-type Handler struct {
+// MethodHandler represents a rule implemented in starlark that implements the GrpcHandler.
+type MethodHandler struct {
 	name     string
 	reporter func(thread *starlark.Thread, msg string)
 	// errorReporter func(msg string, args ...interface{}) error
-	fn starlark.Callable
+	fn     starlark.Callable
+	method protoreflect.MethodDescriptor
 }
 
-func (h *Handler) Name() string {
+func (h *MethodHandler) Name() string {
 	return h.name
 }
 
-func (h *Handler) Handle(method protoreflect.MethodDescriptor, request protoreflect.ProtoMessage, ss grpc.ServerStream) (proto.Message, error) {
+func (h *MethodHandler) Handle(method protoreflect.MethodDescriptor, request protoreflect.ProtoMessage, ss grpc.ServerStream) (proto.Message, error) {
 	var context starlark.Value
 	var args starlark.Tuple
 
@@ -77,7 +78,7 @@ func (h *Handler) Handle(method protoreflect.MethodDescriptor, request protorefl
 	}
 }
 
-func newRegisterHandlersFunction(callback HandlerRegistrationFunction) goStarlarkFunction {
+func newRegisterHandlersFunction(callback MethodHandlerRegistrationFunction) goStarlarkFunction {
 	return func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 		var mappings *starlark.Dict
 		if err := starlark.UnpackPositionalArgs(fn.Name(), args, kwargs, 1, &mappings); err != nil {
@@ -101,7 +102,7 @@ func newRegisterHandlersFunction(callback HandlerRegistrationFunction) goStarlar
 			if !ok {
 				return nil, fmt.Errorf("%s: register error: dict value should be function (got %s)", fn.Name(), value.Type())
 			}
-			handler := &Handler{
+			handler := &MethodHandler{
 				name:     name.GoString(),
 				fn:       callable,
 				reporter: thread.Print,
