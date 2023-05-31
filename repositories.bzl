@@ -144,9 +144,9 @@ def com_google_protobuf():
 def grpcurl_deps():
     _maybe(
         http_archive,
-        name = "github_com_fullstorydev_grpcurl_releases_download_v1_8_7_grpcurl_1_8_7_linux_arm64_tar_gz",
-        sha256 = "9859ba9e1855748ef76c47673e033a374fe3a8d5f0d516baa6befd00b4de0b43",
-        urls = ["https://github.com/fullstorydev/grpcurl/releases/download/v1.8.7/grpcurl_1.8.7_linux_arm64.tar.gz"],
+        name = "github_com_fullstorydev_grpcurl_releases_download_v1_8_7_grpcurl_1_8_7_linux_x86_64_tar_gz",
+        sha256 = "b50a9c9cdbabab03c0460a7218eab4a954913d696b4d69ffb720f42d869dbdd5",
+        urls = ["https://github.com/fullstorydev/grpcurl/releases/download/v1.8.7/grpcurl_1.8.7_linux_x86_64.tar.gz"],
         build_file_content = """
 filegroup(
     name = "file",
@@ -155,12 +155,24 @@ filegroup(
 )
         """,
     )
-
     _maybe(
         http_archive,
         name = "github_com_fullstorydev_grpcurl_releases_download_v1_8_7_grpcurl_1_8_7_osx_arm64_tar_gz",
         sha256 = "d40f353ea243a99f847daa1e791c42a3384d713ca4a006937f83172b67e3eae9",
         urls = ["https://github.com/fullstorydev/grpcurl/releases/download/v1.8.7/grpcurl_1.8.7_osx_arm64.tar.gz"],
+        build_file_content = """
+filegroup(
+    name = "file",
+    srcs = ["grpcurl"],
+    visibility = ["//visibility:public"],
+)
+        """,
+    )
+    _maybe(
+        http_archive,
+        name = "github_com_fullstorydev_grpcurl_releases_download_v1_8_7_grpcurl_1_8_7_osx_x86_64_tar_gz",
+        sha256 = "1add67199bd114dc1a4fb8dcd129ab7709f54be0235e6ae683498783bb98242e",
+        urls = ["https://github.com/fullstorydev/grpcurl/releases/download/v1.8.7/grpcurl_1.8.7_osx_x86_64.tar.gz"],
         build_file_content = """
 filegroup(
     name = "file",

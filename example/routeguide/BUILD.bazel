@@ -33,10 +33,15 @@ sh_test(
 genrule(
     name = "grpcurl_tool",
     srcs = select({
-        "@bazel_tools//src/conditions:darwin_x86_64": ["@github_com_fullstorydev_grpcurl_releases_download_v1_8_7_grpcurl_1_8_7_osx_arm64_tar_gz//:file"],
-        "@bazel_tools//src/conditions:linux_x86_64": ["@github_com_fullstorydev_grpcurl_releases_download_v1_8_7_grpcurl_1_8_7_osx_arm64_tar_gz//:file"],
-        "@bazel_tools//src/conditions:windows": ["@github_com_fullstorydev_grpcurl_releases_download_v1_8_7_grpcurl_1_8_7_osx_arm64_tar_gz//:file"],
-        "//conditions:default": ["@github_com_fullstorydev_grpcurl_releases_download_v1_8_7_grpcurl_1_8_7_osx_arm64_tar_gz//:file"],
+        "@bazel_tools//src/conditions:darwin_x86_64": [
+            "@github_com_fullstorydev_grpcurl_releases_download_v1_8_7_grpcurl_1_8_7_osx_x86_64_tar_gz//:file",
+        ],
+        "@bazel_tools//src/conditions:darwin_arm64": [
+            "@github_com_fullstorydev_grpcurl_releases_download_v1_8_7_grpcurl_1_8_7_osx_arm64_tar_gz//:file",
+        ],
+        "//conditions:default": [
+            "@github_com_fullstorydev_grpcurl_releases_download_v1_8_7_grpcurl_1_8_7_linux_x86_64_tar_gz//:file",
+        ],
     }),
     outs = ["grpcurl.exe"],
     cmd = "cp $(SRCS) $@",
