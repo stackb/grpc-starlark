@@ -9,6 +9,7 @@ go_library(
         "//pkg/net",
         "//pkg/os",
         "//pkg/starlarkgrpc",
+        "//pkg/thread",
         "@com_github_stripe_skycfg//go/protomodule",
         "@net_starlark_go//lib/proto",
         "@net_starlark_go//starlark",

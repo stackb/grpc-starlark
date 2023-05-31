@@ -15,6 +15,7 @@ import (
 	pkgnet "github.com/stackb/grpc-starlark/pkg/net"
 	pkgos "github.com/stackb/grpc-starlark/pkg/os"
 	"github.com/stackb/grpc-starlark/pkg/starlarkgrpc"
+	"github.com/stackb/grpc-starlark/pkg/thread"
 )
 
 func Load(filename string, src interface{}, reporter func(msg string), errorReporter func(err error), files *protoregistry.Files) error {
@@ -92,6 +93,7 @@ func NewPredeclared(files *protoregistry.Files) starlark.StringDict {
 	return starlark.StringDict{
 		"os":     pkgos.Module,
 		"net":    pkgnet.Module,
+		"thread": thread.Module,
 		"grpc":   starlarkgrpc.Module,
 		"proto":  protomodule.NewModule(&types),
 		"struct": starlark.NewBuiltin("struct", starlarkstruct.Make),
