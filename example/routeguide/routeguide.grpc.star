@@ -18,15 +18,23 @@ def get_feature(_point, _context):
         a Feature, ideally nearest to the given point.
 
     """
-    return decode_feature("""
-    {
-        "location": {
-            "latitude": 407838351,
-            "longitude": -746143763
-        },
-        "name": "Patriots Path, Mendham, NJ 07945, USA"
-    }
-    """)
+
+    # return decode_feature("""
+    # {
+    #     "location": {
+    #         "latitude": 407838351,
+    #         "longitude": -746143763
+    #     },
+    #     "name": "Patriots Path, Mendham, NJ 07945, USA"
+    # }
+    # """)
+    return routeguidepb.Feature(
+        location = routeguidepb.Point(
+            latitude = 407838351,
+            longitude = -746143763,
+        ),
+        name = "Patriots Path, Mendham, NJ 07945, USA",
+    )
 
 def list_features(_rectangle, context):
     """list_features implements a server streaming handler
