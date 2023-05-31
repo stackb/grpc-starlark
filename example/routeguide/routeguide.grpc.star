@@ -117,10 +117,7 @@ server.register("example.routeguide.RouteGuide", {
     "RouteChat": route_chat,
 })
 
-server.start(grpc.Listener(
+server.start(net.Listener(
     network = "tcp",
     address = os.getenv("ROUTEGUIDE_ADDRESS"),
 ))
-
-# client = grpc.Client("example.routeguide.RouteGuide")
-# client.GetFeature()

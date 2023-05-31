@@ -12,6 +12,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoregistry"
 	"google.golang.org/protobuf/types/dynamicpb"
 
+	pkgnet "github.com/stackb/grpc-starlark/pkg/net"
 	pkgos "github.com/stackb/grpc-starlark/pkg/os"
 	"github.com/stackb/grpc-starlark/pkg/starlarkgrpc"
 )
@@ -90,6 +91,7 @@ func NewPredeclared(files *protoregistry.Files) starlark.StringDict {
 
 	return starlark.StringDict{
 		"os":     pkgos.Module,
+		"net":    pkgnet.Module,
 		"grpc":   starlarkgrpc.Module,
 		"proto":  protomodule.NewModule(&types),
 		"struct": starlark.NewBuiltin("struct", starlarkstruct.Make),

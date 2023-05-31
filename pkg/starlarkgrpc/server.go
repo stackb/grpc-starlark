@@ -241,20 +241,15 @@ func (s *grpcServer) HandleMethod(srv interface{}, ctx context.Context, decode f
 	return response, err
 }
 
-func newServerFunction() goStarlarkFunction {
-	return func(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-
-		if err := starlark.UnpackArgs("Server", args, kwargs); err != nil {
-			return nil, err
-		}
-
-		value := &grpcServer{
-			server:   grpc.NewServer(),
-			handlers: make(map[string]*MethodHandler),
-		}
-
-		return value, nil
+func newServer(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+	if err := starlark.UnpackArgs("Server", args, kwargs); err != nil {
+		return nil, err
 	}
+	value := &grpcServer{
+		server:   grpc.NewServer(),
+		handlers: make(map[string]*MethodHandler),
+	}
+	return value, nil
 }
 
 func serviceNames(files *protoregistry.Files) (names []string) {

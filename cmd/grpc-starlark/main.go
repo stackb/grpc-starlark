@@ -47,13 +47,11 @@ func run(args []string) error {
 	})
 
 	reporter := func(msg string) {
-		log.Println("starlark> ", msg)
+		log.Println("grpc-starlark> ", msg)
 	}
-
 	errorReporter := func(err error) {
-		log.Println("starlark error> ", err.Error())
+		log.Println("grpc-starlark error> ", err.Error())
 	}
-
 	if err := program.Load(cfg.filename, cfg.in, reporter, errorReporter, files); err != nil {
 		return err
 	}
@@ -61,7 +59,6 @@ func run(args []string) error {
 	log.Printf("grpc-starlark ready (use SIGTERM to exit)")
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-
 	<-c
 	log.Println("SIGTERM recv'd (exiting)")
 
@@ -80,8 +77,4 @@ func parseProtoSetFile(filename string) (*descriptorpb.FileDescriptorSet, error)
 	}
 
 	return &dpb, nil
-}
-
-func makeProtoRegistryFiles(dpb *descriptorpb.FileDescriptorSet) (*protoregistry.Files, error) {
-	return protodesc.NewFiles(dpb)
 }

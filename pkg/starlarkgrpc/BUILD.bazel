@@ -7,7 +7,6 @@ go_library(
         "handler.go",
         "method_context.go",
         "module.go",
-        "net_listener.go",
         "recv_rpc.go",
         "send_rpc.go",
         "server.go",
