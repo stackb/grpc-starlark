@@ -118,7 +118,23 @@ server.register("example.routeguide.RouteGuide", {
     "RouteChat": route_chat,
 })
 
-server.start(net.Listener(
+listener = net.Listener(
     network = "tcp",
     address = os.getenv("ROUTEGUIDE_ADDRESS"),
+)
+
+server.start(listener)
+
+channel = grpc.Channel(listener.address)
+print("channel:", channel)
+
+client = grpc.Client("example.routeguide.RouteGuide", channel)
+
+print("client.GetFeature:", client.GetFeature)
+
+feature = client.GetFeature(routeguidepb.Point(
+    latitude = 407838351,
+    longitude = -746143763,
 ))
+
+print("client feature:", feature)

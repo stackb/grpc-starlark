@@ -14,7 +14,7 @@ type sendRPC struct {
 	ss   grpc.ServerStream
 }
 
-func (*sendRPC) String() string       { return "SendRPC" }
+func (r *sendRPC) String() string     { return r.name }
 func (*sendRPC) Type() string         { return "SendRPC" }
 func (*sendRPC) Freeze()              {} // immutable
 func (*sendRPC) Truth() starlark.Bool { return starlark.False }

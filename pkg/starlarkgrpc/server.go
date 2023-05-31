@@ -40,7 +40,7 @@ func (c *grpcServer) Hash() (uint32, error) {
 
 // AttrNames implements part of the starlark.HasAttrs interface
 func (c *grpcServer) AttrNames() []string {
-	return []string{"start", "stop", "register"}
+	return []string{"address", "register", "start", "stop"}
 }
 
 // Attr implements part of the starlark.HasAttrs interface
@@ -86,20 +86,9 @@ func (c *grpcServer) register(thread *starlark.Thread, fn *starlark.Builtin, arg
 		return nil, err
 	}
 
-	var sd protoreflect.ServiceDescriptor
-	protoregistry.GlobalFiles.RangeFiles(func(fd protoreflect.FileDescriptor) bool {
-		services := fd.Services()
-		for i := 0; i < services.Len(); i++ {
-			s := services.Get(i)
-			if string(s.FullName()) == serviceName {
-				sd = s
-				return false
-			}
-		}
-		return true
-	})
-	if sd == nil {
-		return nil, fmt.Errorf("grpc.register error: unknown service: %s (known: %v)", serviceName, serviceNames(protoregistry.GlobalFiles))
+	sd, err := getServiceDescriptor(protoregistry.GlobalFiles, serviceName)
+	if err != nil {
+		return nil, err
 	}
 	gsd := grpc.ServiceDesc{ServiceName: string(sd.FullName()), HandlerType: (*interface{})(nil)}
 
@@ -262,4 +251,23 @@ func serviceNames(files *protoregistry.Files) (names []string) {
 		return true
 	})
 	return
+}
+
+func getServiceDescriptor(files *protoregistry.Files, name string) (protoreflect.ServiceDescriptor, error) {
+	var sd protoreflect.ServiceDescriptor
+	files.RangeFiles(func(fd protoreflect.FileDescriptor) bool {
+		services := fd.Services()
+		for i := 0; i < services.Len(); i++ {
+			s := services.Get(i)
+			if string(s.FullName()) == name {
+				sd = s
+				return false
+			}
+		}
+		return true
+	})
+	if sd == nil {
+		return nil, fmt.Errorf("unknown service: %s (known: %v)", name, serviceNames(files))
+	}
+	return sd, nil
 }
