@@ -12,7 +12,6 @@ go_library(
     deps = [
         "//pkg/program",
         "//pkg/server",
-        "//pkg/starlarkgrpc",
         "@org_golang_google_protobuf//proto",
         "@org_golang_google_protobuf//reflect/protodesc",
         "@org_golang_google_protobuf//reflect/protoregistry",

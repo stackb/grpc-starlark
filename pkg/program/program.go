@@ -13,10 +13,11 @@ import (
 	"google.golang.org/protobuf/reflect/protoregistry"
 	"google.golang.org/protobuf/types/dynamicpb"
 
+	pkgos "github.com/stackb/grpc-starlark/pkg/os"
 	"github.com/stackb/grpc-starlark/pkg/starlarkgrpc"
 )
 
-func LoadFile(filename string, reporter func(msg string), errorReporter func(err error), files *protoregistry.Files, onHandler starlarkgrpc.HandlerRegistrationFunction) error {
+func LoadFile(filename string, reporter func(msg string), errorReporter func(err error), files *protoregistry.Files, onHandler starlarkgrpc.MethodHandlerRegistrationFunction) error {
 	f, err := os.Open(filename)
 	if err != nil {
 		return fmt.Errorf("failed to open rule file %q: %w", filename, err)
@@ -26,7 +27,7 @@ func LoadFile(filename string, reporter func(msg string), errorReporter func(err
 	return Load(filename, f, reporter, errorReporter, files, onHandler)
 }
 
-func Load(filename string, src interface{}, reporter func(msg string), errorReporter func(err error), files *protoregistry.Files, onHandler starlarkgrpc.HandlerRegistrationFunction) error {
+func Load(filename string, src interface{}, reporter func(msg string), errorReporter func(err error), files *protoregistry.Files, onHandler starlarkgrpc.MethodHandlerRegistrationFunction) error {
 	// newErrorf := func(msg string, args ...interface{}) error {
 	// 	err := fmt.Errorf(filename+": "+msg, args...)
 	// 	errorReporter(err)
@@ -70,7 +71,7 @@ func newProgram(filename string, src interface{}, predeclared starlark.StringDic
 	return &globals, thread, nil
 }
 
-func NewPredeclared(onHandler starlarkgrpc.HandlerRegistrationFunction, files *protoregistry.Files) starlark.StringDict {
+func NewPredeclared(onHandler starlarkgrpc.MethodHandlerRegistrationFunction, files *protoregistry.Files) starlark.StringDict {
 	var types protoregistry.Types
 	files.RangeFiles(func(fd protoreflect.FileDescriptor) bool {
 		messages := fd.Messages()
@@ -84,6 +85,7 @@ func NewPredeclared(onHandler starlarkgrpc.HandlerRegistrationFunction, files *p
 		return true
 	})
 	return starlark.StringDict{
+		"os":     pkgos.Module,
 		"grpc":   starlarkgrpc.NewModule(onHandler),
 		"proto":  protomodule.NewModule(&types),
 		"struct": starlark.NewBuiltin("struct", starlarkstruct.Make),

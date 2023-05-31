@@ -19,17 +19,23 @@ import (
 type Server struct {
 	server   *grpc.Server
 	methods  map[string]protoreflect.MethodDescriptor
-	handlers starlarkgrpc.HandlerMap
+	handlers starlarkgrpc.MethodHandlerMap
 }
 
 func New(files *protoregistry.Files) (*Server, error) {
 	s := &Server{
-		handlers: make(starlarkgrpc.HandlerMap),
+		handlers: make(starlarkgrpc.MethodHandlerMap),
 		methods:  make(map[string]protoreflect.MethodDescriptor),
 	}
 	s.server = grpc.NewServer(grpc.UnaryInterceptor(s.InterceptUnary))
 
 	files.RangeFiles(func(fd protoreflect.FileDescriptor) bool {
+		if err := protoregistry.GlobalFiles.RegisterFile(fd); err != nil {
+			log.Printf("global registerFile error: %v", err)
+		}
+		if fd != nil {
+			return true
+		}
 		services := fd.Services()
 		for i := 0; i < services.Len(); i++ {
 			sd := services.Get(i)
@@ -78,7 +84,7 @@ func New(files *protoregistry.Files) (*Server, error) {
 	return s, nil
 }
 
-func (s *Server) OnHandler(handler *starlarkgrpc.Handler) error {
+func (s *Server) OnHandler(handler *starlarkgrpc.MethodHandler) error {
 	if _, ok := s.methods[handler.Name()]; ok {
 		log.Printf("Registered handler for %s", handler.Name())
 		s.handlers[handler.Name()] = handler

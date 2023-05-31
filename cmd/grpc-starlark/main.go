@@ -1,9 +1,7 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"net"
 	"os"
 	"os/signal"
 	"syscall"
@@ -53,23 +51,23 @@ func run(args []string) error {
 		return err
 	}
 
-	listener, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%s", cfg.port))
-	if err != nil {
-		return fmt.Errorf("failed to listen to port %s: %w", cfg.port, err)
-	}
+	// listener, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%s", cfg.port))
+	// if err != nil {
+	// 	return fmt.Errorf("failed to listen to port %s: %w", cfg.port, err)
+	// }
 
-	if err := server.Start(listener); err != nil {
-		return err
-	}
+	// if err := server.Start(listener); err != nil {
+	// 	return err
+	// }
 
-	if cfg.bindAddressFile != "" {
-		if err := os.WriteFile(cfg.bindAddressFile, []byte(listener.Addr().String()), os.ModePerm); err != nil {
-			return fmt.Errorf("writing -bind_address_file %s: %v", cfg.bindAddressFile, err)
-		}
-		log.Printf("Server bind address written to <%s> (%s)", cfg.bindAddressFile, listener.Addr())
-	}
+	// if cfg.bindAddressFile != "" {
+	// 	if err := os.WriteFile(cfg.bindAddressFile, []byte(listener.Addr().String()), os.ModePerm); err != nil {
+	// 		return fmt.Errorf("writing -bind_address_file %s: %v", cfg.bindAddressFile, err)
+	// 	}
+	// 	log.Printf("Server bind address written to <%s> (%s)", cfg.bindAddressFile, listener.Addr())
+	// }
 
-	log.Printf("Ready at %s (use SIGTERM to exit)", listener.Addr())
+	// log.Printf("Ready at %s (use SIGTERM to exit)", listener.Addr())
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 

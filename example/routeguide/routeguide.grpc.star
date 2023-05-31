@@ -114,3 +114,17 @@ grpc.RegisterHandlers({
     "/example.routeguide.RouteGuide/RecordRoute": record_route,
     "/example.routeguide.RouteGuide/RouteChat": route_chat,
 })
+
+server = grpc.Server()
+
+server.register("example.routeguide.RouteGuide", {
+    "GetFeature": get_feature,
+    "ListFeatures": list_features,
+    "RecordRoute": record_route,
+    "RouteChat": route_chat,
+})
+
+server.start(grpc.Listener(
+    network = "tcp",
+    address = os.getenv("ROUTEGUIDE_ADDRESS"),
+))
