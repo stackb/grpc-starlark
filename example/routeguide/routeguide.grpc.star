@@ -36,16 +36,17 @@ def get_feature(_point, _context):
         name = "Patriots Path, Mendham, NJ 07945, USA",
     )
 
-def list_features(_rectangle, context):
+def list_features(rectangle, context):
     """list_features implements a server streaming handler
 
     Args:
-        _rectangle: the rectangle to get features within
+        rectangle: the rectangle to get features within
         context: the stream context object
     Returns:
         None
 
     """
+    print("listing features in:", rectangle)
     db = decode_feature_database("""
 {
     "feature": [
@@ -118,7 +119,9 @@ server.register("example.routeguide.RouteGuide", {
     "RouteChat": route_chat,
 })
 
-server.start(net.Listener(
+listener = net.Listener(
     network = "tcp",
     address = os.getenv("ROUTEGUIDE_ADDRESS"),
-))
+)
+
+server.start(listener)

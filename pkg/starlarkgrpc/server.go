@@ -18,7 +18,7 @@ import (
 // grpcServer implements starlark.Value for a grpc.Server.
 type grpcServer struct {
 	server   *grpc.Server
-	handlers MethodHandlerMap
+	handlers HandlerMap
 }
 
 // String implements part of the starlark.Value interface
@@ -40,7 +40,7 @@ func (c *grpcServer) Hash() (uint32, error) {
 
 // AttrNames implements part of the starlark.HasAttrs interface
 func (c *grpcServer) AttrNames() []string {
-	return []string{"start", "stop", "register"}
+	return []string{"address", "register", "start", "stop"}
 }
 
 // Attr implements part of the starlark.HasAttrs interface
@@ -86,20 +86,9 @@ func (c *grpcServer) register(thread *starlark.Thread, fn *starlark.Builtin, arg
 		return nil, err
 	}
 
-	var sd protoreflect.ServiceDescriptor
-	protoregistry.GlobalFiles.RangeFiles(func(fd protoreflect.FileDescriptor) bool {
-		services := fd.Services()
-		for i := 0; i < services.Len(); i++ {
-			s := services.Get(i)
-			if string(s.FullName()) == serviceName {
-				sd = s
-				return false
-			}
-		}
-		return true
-	})
-	if sd == nil {
-		return nil, fmt.Errorf("grpc.register error: unknown service: %s (known: %v)", serviceName, serviceNames(protoregistry.GlobalFiles))
+	sd, err := getServiceDescriptor(protoregistry.GlobalFiles, serviceName)
+	if err != nil {
+		return nil, err
 	}
 	gsd := grpc.ServiceDesc{ServiceName: string(sd.FullName()), HandlerType: (*interface{})(nil)}
 
@@ -135,11 +124,11 @@ func (c *grpcServer) register(thread *starlark.Thread, fn *starlark.Builtin, arg
 			return nil, fmt.Errorf("%s: register error: dict value should be function (got %s)", fn.Name(), value.Type())
 		}
 
-		handler := &MethodHandler{
+		handler := &Handler{
 			name:     name.GoString(),
 			fn:       callable,
 			reporter: thread.Print,
-			method:   method,
+			md:       method,
 		}
 
 		key := fmt.Sprintf("/%s/%s", sd.FullName(), method.Name())
@@ -192,14 +181,14 @@ func (s *grpcServer) HandleStream(srv interface{}, ss grpc.ServerStream) error {
 	}
 
 	var request protoreflect.ProtoMessage
-	if handler.method.IsStreamingServer() && !handler.method.IsStreamingClient() {
-		request = dynamicpb.NewMessage(handler.method.Input())
+	if handler.md.IsStreamingServer() && !handler.md.IsStreamingClient() {
+		request = dynamicpb.NewMessage(handler.md.Input())
 		if err := ss.RecvMsg(request); err != nil {
 			return err
 		}
 	}
 
-	response, err := handler.Handle(handler.method, request, ss)
+	response, err := handler.Handle(handler.md, request, ss)
 	if err != nil {
 		log.Printf("handler return value error: %v", err)
 		return err
@@ -207,7 +196,7 @@ func (s *grpcServer) HandleStream(srv interface{}, ss grpc.ServerStream) error {
 
 	log.Println("stream response:", response)
 
-	if handler.method.IsStreamingClient() && !handler.method.IsStreamingServer() {
+	if handler.md.IsStreamingClient() && !handler.md.IsStreamingServer() {
 		if err := ss.SendMsg(response); err != nil {
 			return err
 		}
@@ -227,12 +216,12 @@ func (s *grpcServer) HandleMethod(srv interface{}, ctx context.Context, decode f
 		return nil, status.Error(codes.Unimplemented, stream.Method())
 	}
 
-	input := dynamicpb.NewMessage(handler.method.Input())
+	input := dynamicpb.NewMessage(handler.md.Input())
 	if err := decode(input); err != nil {
 		return nil, err
 	}
 
-	response, err := handler.Handle(handler.method, input, nil)
+	response, err := handler.Handle(handler.md, input, nil)
 	if err != nil {
 		log.Printf("handler return value error: %v", err)
 		return nil, err
@@ -247,7 +236,7 @@ func newServer(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple
 	}
 	value := &grpcServer{
 		server:   grpc.NewServer(),
-		handlers: make(map[string]*MethodHandler),
+		handlers: make(map[string]*Handler),
 	}
 	return value, nil
 }
@@ -262,4 +251,23 @@ func serviceNames(files *protoregistry.Files) (names []string) {
 		return true
 	})
 	return
+}
+
+func getServiceDescriptor(files *protoregistry.Files, name string) (protoreflect.ServiceDescriptor, error) {
+	var sd protoreflect.ServiceDescriptor
+	files.RangeFiles(func(fd protoreflect.FileDescriptor) bool {
+		services := fd.Services()
+		for i := 0; i < services.Len(); i++ {
+			s := services.Get(i)
+			if string(s.FullName()) == name {
+				sd = s
+				return false
+			}
+		}
+		return true
+	})
+	if sd == nil {
+		return nil, fmt.Errorf("unknown service: %s (known: %v)", name, serviceNames(files))
+	}
+	return sd, nil
 }

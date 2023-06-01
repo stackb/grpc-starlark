@@ -3,13 +3,15 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "starlarkgrpc",
     srcs = [
+        "channel.go",
+        "client.go",
         "error.go",
         "handler.go",
         "method_context.go",
         "module.go",
-        "recv_rpc.go",
-        "send_rpc.go",
         "server.go",
+        "server_recv.go",
+        "server_send.go",
         "stream_context.go",
         "structs.go",
         "symbol.go",

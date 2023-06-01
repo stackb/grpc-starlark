@@ -96,7 +96,6 @@ function main {
     test_record_route
     echo "========================================"
     test_route_chat
-
     stop_server
 }
 
