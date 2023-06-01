@@ -14,13 +14,13 @@ import (
 var Module = &starlarkstruct.Module{
 	Name: "thread",
 	Members: starlark.StringDict{
-		"sleep": starlark.NewBuiltin("sleep", sleep),
+		"sleep": starlark.NewBuiltin("thread.sleep", sleep),
 	},
 }
 
 func sleep(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	var millis int64
-	if err := starlark.UnpackArgs("sleep", args, kwargs,
+	if err := starlark.UnpackArgs("thread.sleep", args, kwargs,
 		"millis", &millis,
 	); err != nil {
 		return nil, err
