@@ -22,10 +22,12 @@ type grpcServer struct {
 }
 
 // String implements part of the starlark.Value interface
-func (*grpcServer) String() string { return "GrpcServer" }
+func (s *grpcServer) String() string {
+	return fmt.Sprintf("<grpc.Server %v>", grpcServerServiceInfoNames(s.server))
+}
 
 // Type implements part of the starlark.Value interface
-func (*grpcServer) Type() string { return "GrpcServer" }
+func (*grpcServer) Type() string { return "grpc.Server" }
 
 // Freeze implements part of the starlark.Value interface
 func (*grpcServer) Freeze() {} // immutable
@@ -57,17 +59,13 @@ func (c *grpcServer) Attr(name string) (starlark.Value, error) {
 }
 
 func (c *grpcServer) start(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-	if args.Len() != 1 {
-		return nil, fmt.Errorf("grpc.Server.start requires exactly one argument (a listener)")
-	}
-	value := args.Index(0)
-	lis, ok := value.(net.Listener)
-	if !ok {
-		return nil, fmt.Errorf("grpc.Server.start argument must implement net.Listener (got %T)", value)
+	var listener net.Listener
+	if err := starlark.UnpackPositionalArgs(fn.Name(), args, kwargs, 1, &listener); err != nil {
+		return nil, err
 	}
 	go func() {
-		log.Printf("grpc.Server listening on %v", lis.Addr())
-		if err := c.server.Serve(lis); err != nil {
+		log.Printf("grpc.Server listening on %v", listener.Addr())
+		if err := c.server.Serve(listener); err != nil {
 			log.Fatalln("grpc.Server error:", err)
 		}
 	}()
@@ -75,14 +73,26 @@ func (c *grpcServer) start(thread *starlark.Thread, fn *starlark.Builtin, args s
 }
 
 func (c *grpcServer) stop(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-	c.server.GracefulStop()
+	graceful := true
+	if err := starlark.UnpackArgs(fn.Name(), args, kwargs,
+		"graceful?", &graceful,
+	); err != nil {
+		return nil, err
+	}
+	if graceful {
+		c.server.GracefulStop()
+	} else {
+		c.server.Stop()
+	}
 	return starlark.None, nil
 }
 
 func (c *grpcServer) register(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	var serviceName string
-	var mappings *starlark.Dict
-	if err := starlark.UnpackPositionalArgs(fn.Name(), args, kwargs, 2, &serviceName, &mappings); err != nil {
+	var handlers *starlark.Dict
+	if err := starlark.UnpackArgs(fn.Name(), args, kwargs,
+		"service", &serviceName,
+		"handlers", &handlers); err != nil {
 		return nil, err
 	}
 
@@ -93,7 +103,7 @@ func (c *grpcServer) register(thread *starlark.Thread, fn *starlark.Builtin, arg
 	gsd := grpc.ServiceDesc{ServiceName: string(sd.FullName()), HandlerType: (*interface{})(nil)}
 
 	methods := sd.Methods()
-	for _, key := range mappings.Keys() {
+	for _, key := range handlers.Keys() {
 		name, ok := key.(starlark.String)
 		if !ok {
 			return nil, fmt.Errorf("%s: register error: dict key should be a fully-qualified method name (got %T)", fn.Name(), key)
@@ -111,7 +121,7 @@ func (c *grpcServer) register(thread *starlark.Thread, fn *starlark.Builtin, arg
 			return nil, fmt.Errorf("grpc.register error: unknown method %s for service %s", name.GoString(), serviceName)
 		}
 
-		value, ok, err := mappings.Get(key)
+		value, ok, err := handlers.Get(key)
 		if err != nil {
 			log.Printf("registration mapping error: get %s failed: %v", key, err)
 			continue
@@ -231,7 +241,7 @@ func (s *grpcServer) HandleMethod(srv interface{}, ctx context.Context, decode f
 }
 
 func newServer(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-	if err := starlark.UnpackArgs("Server", args, kwargs); err != nil {
+	if err := starlark.UnpackArgs("grpc.Server", args, kwargs); err != nil {
 		return nil, err
 	}
 	value := &grpcServer{
@@ -250,6 +260,13 @@ func serviceNames(files *protoregistry.Files) (names []string) {
 		}
 		return true
 	})
+	return
+}
+
+func grpcServerServiceInfoNames(server *grpc.Server) (names []string) {
+	for name := range server.GetServiceInfo() {
+		names = append(names, name)
+	}
 	return
 }
 

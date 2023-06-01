@@ -12,6 +12,7 @@ go_library(
         "server.go",
         "server_recv.go",
         "server_send.go",
+        "status.go",
         "stream_context.go",
         "structs.go",
         "symbol.go",
@@ -37,6 +38,7 @@ go_test(
     srcs = ["module_test.go"],
     embed = [":starlarkgrpc"],
     deps = [
+        "//pkg/net",
         "@com_github_google_go_cmp//cmp",
         "@net_starlark_go//starlark",
     ],

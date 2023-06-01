@@ -8,6 +8,7 @@ import (
 var Module = &starlarkstruct.Module{
 	Name: "grpc",
 	Members: starlark.StringDict{
+		"status":  Status,
 		"Client":  starlark.NewBuiltin("grpc.Client", newClient),
 		"Channel": starlark.NewBuiltin("grpc.Channel", newChannel),
 		"Server":  starlark.NewBuiltin("grpc.Server", newServer),

@@ -29,18 +29,17 @@ func makeGrpcError(strct *starlarkstruct.Struct) error {
 }
 
 func newError(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-	var code int
+	code := int(codes.Unknown)
 	var message string
 
-	if err := starlark.UnpackArgs("Error", args, kwargs,
-		"code", &code,
-		"message", &message,
+	if err := starlark.UnpackArgs("grpc.Error", args, kwargs,
+		"code?", &code,
+		"message?", &message,
 	); err != nil {
 		return nil, err
 	}
-
 	value := starlarkstruct.FromStringDict(
-		Symbol("Error"),
+		Symbol("grpc.Error"),
 		starlark.StringDict{
 			"code":    starlark.MakeInt(code),
 			"message": starlark.String(message),
