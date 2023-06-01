@@ -62,7 +62,7 @@ func newClient(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple
 	var serviceName string
 	var channel *channel
 
-	if err := starlark.UnpackArgs("Client", args, kwargs,
+	if err := starlark.UnpackArgs("grpc.Client", args, kwargs,
 		"service", &serviceName,
 		"channel", &channel,
 	); err != nil {
