@@ -14,8 +14,10 @@ go_library(
         "@net_starlark_go//lib/proto",
         "@net_starlark_go//starlark",
         "@net_starlark_go//starlarkstruct",
+        "@org_golang_google_protobuf//proto",
         "@org_golang_google_protobuf//reflect/protoreflect",
         "@org_golang_google_protobuf//reflect/protoregistry",
+        "@org_golang_google_protobuf//types/descriptorpb",
         "@org_golang_google_protobuf//types/dynamicpb",
     ],
 )
