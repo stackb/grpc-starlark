@@ -10,27 +10,56 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/types/dynamicpb"
 )
 
-// MethodHandlerMap is a map of Handler implementations keyed by method fullname.
-type MethodHandlerMap map[string]*MethodHandler
+// HandlerMap is a map of Handler implementations keyed by method fullname.
+type HandlerMap map[string]*Handler
 
-type MethodHandlerRegistrationFunction func(handler *MethodHandler) error
+type HandlerRegistrationFunction func(handler *Handler) error
 
-// MethodHandler represents a rule implemented in starlark that implements the GrpcHandler.
-type MethodHandler struct {
+// Handler represents a rule implemented in starlark that implements the GrpcHandler.
+type Handler struct {
 	name     string
 	reporter func(thread *starlark.Thread, msg string)
 	// errorReporter func(msg string, args ...interface{}) error
-	fn     starlark.Callable
-	method protoreflect.MethodDescriptor
+	fn starlark.Callable
+	md protoreflect.MethodDescriptor
 }
 
-func (h *MethodHandler) Name() string {
+func (h *Handler) Name() string {
 	return h.name
 }
 
-func (h *MethodHandler) Handle(method protoreflect.MethodDescriptor, request protoreflect.ProtoMessage, ss grpc.ServerStream) (proto.Message, error) {
+// HandleStream implements grpc.StreamHandler for handling of server-streaming
+// calls.
+func (h *Handler) HandleStream(srv interface{}, ss grpc.ServerStream) error {
+	var request protoreflect.ProtoMessage
+	if h.md.IsStreamingServer() && !h.md.IsStreamingClient() {
+		request = dynamicpb.NewMessage(h.md.Input())
+		if err := ss.RecvMsg(request); err != nil {
+			return err
+		}
+	}
+
+	response, err := h.Handle(h.md, request, ss)
+	if err != nil {
+		log.Printf("handler return value error: %v", err)
+		return err
+	}
+
+	log.Println("stream response:", response)
+
+	if h.md.IsStreamingClient() && !h.md.IsStreamingServer() {
+		if err := ss.SendMsg(response); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (h *Handler) Handle(method protoreflect.MethodDescriptor, request protoreflect.ProtoMessage, ss grpc.ServerStream) (proto.Message, error) {
 	var context starlark.Value
 	var args starlark.Tuple
 
@@ -77,41 +106,3 @@ func (h *MethodHandler) Handle(method protoreflect.MethodDescriptor, request pro
 		return nil, fmt.Errorf("unexpected handler return type constructor: %v (%T)", resp, resp)
 	}
 }
-
-func newRegisterHandlersFunction(callback MethodHandlerRegistrationFunction) goStarlarkFunction {
-	return func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-		var mappings *starlark.Dict
-		if err := starlark.UnpackPositionalArgs(fn.Name(), args, kwargs, 1, &mappings); err != nil {
-			return nil, err
-		}
-
-		for _, key := range mappings.Keys() {
-			name, ok := key.(starlark.String)
-			if !ok {
-				return nil, fmt.Errorf("%s: register error: dict key should be a fully-qualified method name (got %T)", fn.Name(), key)
-			}
-			value, ok, err := mappings.Get(key)
-			if err != nil {
-				log.Printf("registration mapping error: get %s failed: %v", key, err)
-				continue
-			}
-			if !ok {
-				panic(fmt.Sprintf("registration mapping lookup: lookup %s failed", key))
-			}
-			callable, ok := value.(starlark.Callable)
-			if !ok {
-				return nil, fmt.Errorf("%s: register error: dict value should be function (got %s)", fn.Name(), value.Type())
-			}
-			handler := &MethodHandler{
-				name:     name.GoString(),
-				fn:       callable,
-				reporter: thread.Print,
-			}
-			callback(handler)
-		}
-
-		return starlark.None, nil
-	}
-}
-
-type goStarlarkFunction func(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error)

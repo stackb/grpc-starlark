@@ -8,25 +8,25 @@ import (
 	"google.golang.org/grpc"
 )
 
-// sendRPC implements starlark.Callable for the context.send function.
-type sendRPC struct {
+// serverSend implements starlark.Callable for the context.send function.
+type serverSend struct {
 	name string
 	ss   grpc.ServerStream
 }
 
-func (r *sendRPC) String() string     { return r.name }
-func (*sendRPC) Type() string         { return "SendRPC" }
-func (*sendRPC) Freeze()              {} // immutable
-func (*sendRPC) Truth() starlark.Bool { return starlark.False }
-func (c *sendRPC) Hash() (uint32, error) {
+func (r *serverSend) String() string     { return r.name }
+func (*serverSend) Type() string         { return "SendRPC" }
+func (*serverSend) Freeze()              {} // immutable
+func (*serverSend) Truth() starlark.Bool { return starlark.False }
+func (c *serverSend) Hash() (uint32, error) {
 	return 0, fmt.Errorf("unhashable: %s", c.Type())
 }
 
-func (c *sendRPC) Name() string {
+func (c *serverSend) Name() string {
 	return c.name
 }
 
-func (c *sendRPC) CallInternal(thread *starlark.Thread, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+func (c *serverSend) CallInternal(thread *starlark.Thread, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	for _, value := range args {
 		msg, ok := protomodule.AsProtoMessage(value)
 		if ok {

@@ -29,6 +29,22 @@ func (c *listener) Hash() (uint32, error) {
 	return 0, fmt.Errorf("unhashable: %s", c.Type())
 }
 
+// AttrNames implements part of the starlark.HasAttrs interface
+func (c *listener) AttrNames() []string {
+	return []string{"address", "network"}
+}
+
+// Attr implements part of the starlark.HasAttrs interface
+func (c *listener) Attr(name string) (starlark.Value, error) {
+	switch name {
+	case "address":
+		return starlark.String(c.Listener.Addr().String()), nil
+	case "network":
+		return starlark.String(c.Listener.Addr().Network()), nil
+	}
+	return nil, nil
+}
+
 func newListener(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	var network string
 	var address string

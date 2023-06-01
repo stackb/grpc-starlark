@@ -12,38 +12,38 @@ import (
 	"google.golang.org/protobuf/types/dynamicpb"
 )
 
-// recvRPC implements starlark.Callable for the context.receive function.
-type recvRPC struct {
+// serverRecv implements starlark.Callable for the context.receive function.
+type serverRecv struct {
 	name string
 	ss   grpc.ServerStream
 	md   protoreflect.MessageDescriptor
 }
 
-func (*recvRPC) String() string       { return "RecvRPC" }
-func (*recvRPC) Type() string         { return "RecvRPC" }
-func (*recvRPC) Freeze()              {} // immutable
-func (*recvRPC) Truth() starlark.Bool { return starlark.False }
-func (c *recvRPC) Iterate() starlark.Iterator {
-	return &recvRpcIterator{
+func (*serverRecv) String() string       { return "RecvRPC" }
+func (*serverRecv) Type() string         { return "RecvRPC" }
+func (*serverRecv) Freeze()              {} // immutable
+func (*serverRecv) Truth() starlark.Bool { return starlark.False }
+func (c *serverRecv) Iterate() starlark.Iterator {
+	return &serverRecvIterator{
 		ss: c.ss,
 		md: c.md,
 	}
 }
 
-func (c *recvRPC) Hash() (uint32, error) {
+func (c *serverRecv) Hash() (uint32, error) {
 	return 0, fmt.Errorf("unhashable: %s", c.Type())
 }
 
-func (c *recvRPC) Name() string {
+func (c *serverRecv) Name() string {
 	return c.name
 }
 
-type recvRpcIterator struct {
+type serverRecvIterator struct {
 	ss grpc.ServerStream
 	md protoreflect.MessageDescriptor
 }
 
-func (it *recvRpcIterator) Next(p *starlark.Value) bool {
+func (it *serverRecvIterator) Next(p *starlark.Value) bool {
 	msg := dynamicpb.NewMessage(it.md)
 	msg.Reset()
 	if err := it.ss.RecvMsg(msg); err != nil {
@@ -62,4 +62,4 @@ func (it *recvRpcIterator) Next(p *starlark.Value) bool {
 	return true
 }
 
-func (*recvRpcIterator) Done() {}
+func (*serverRecvIterator) Done() {}

@@ -13,11 +13,11 @@ func makeStreamContext(method protoreflect.MethodDescriptor, ss grpc.ServerStrea
 		starlark.StringDict{
 			"name":     starlark.String(method.Name()),
 			"fullname": starlark.String(method.FullName()),
-			"send": &sendRPC{
+			"send": &serverSend{
 				name: "send",
 				ss:   ss,
 			},
-			"recv": &recvRPC{
+			"recv": &serverRecv{
 				name: "recv",
 				ss:   ss,
 				md:   method.Input(),

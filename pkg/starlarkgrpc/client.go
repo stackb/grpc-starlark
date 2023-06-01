@@ -3,6 +3,7 @@ package starlarkgrpc
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"sort"
 
@@ -82,69 +83,149 @@ func newClient(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple
 	methods := sd.Methods()
 	for i := 0; i < methods.Len(); i++ {
 		md := methods.Get(i)
-		key := string(md.Name())
-		var val starlark.Value
+		method := fmt.Sprintf("/%s/%s", sd.FullName(), md.Name())
+
+		attrName := string(md.Name())
+		var attr starlark.Value
+
 		if md.IsStreamingServer() && md.IsStreamingClient() {
-			log.Printf("TODO: grpc.Client: Registered %s (bidi stream):", key)
+			log.Printf("TODO: grpc.Client: Registered %s (bidi stream):", attrName)
+			attr = starlark.NewBuiltin(method, newClientStreamingCall(method, md, client.conn))
 		} else if md.IsStreamingServer() {
-			log.Printf("TODO: grpc.Client: Registered %s (server stream):", key)
+			log.Printf("grpc.Client: Registered %s (server stream):", attrName)
+			attr = starlark.NewBuiltin(method, newClientStreamingCall(method, md, client.conn))
 		} else if md.IsStreamingClient() {
-			log.Printf("TODO: grpc.Client: Registered %s (client stream):", key)
+			log.Printf("TODO: grpc.Client: Registered %s (client stream):", attrName)
+			attr = starlark.NewBuiltin(method, newClientStreamingCall(method, md, client.conn))
 		} else {
-			log.Printf("grpc.Client: Registered %s (unary method):", key)
-			name := fmt.Sprintf("/%s/%s", sd.FullName(), md.Name())
-			call := &unaryCall{
-				name: name,
-				md:   md,
-				conn: client.conn,
-			}
-			val = starlark.NewBuiltin("", call.CallInternal)
+			log.Printf("grpc.Client: Registered %s (unary method):", attrName)
+			attr = starlark.NewBuiltin(method, newClientUnaryCall(method, md, client.conn))
 		}
-		client.attrs[key] = val
+
+		if attr != nil {
+			client.attrs[attrName] = attr
+		}
 	}
 
 	return client, nil
 }
 
-type unaryCall struct {
-	name string
-	md   protoreflect.MethodDescriptor
-	conn *grpc.ClientConn
+func newClientUnaryCall(method string, md protoreflect.MethodDescriptor, conn *grpc.ClientConn) func(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+	return func(thread *starlark.Thread, b *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+		if len(args) != 1 {
+			return nil, fmt.Errorf("%s requires a single argument (the request proto)", b.Name())
+		}
+		request, ok := protomodule.AsProtoMessage(args.Index(0))
+		if !ok {
+			return nil, fmt.Errorf("failed to convert request argument to ProtoMessage: %v", args.Index(0))
+		}
+		ctx := context.Background()
+		response := dynamicpb.NewMessage(md.Output())
+		if err := conn.Invoke(ctx, method, request, response); err != nil {
+			return nil, err
+		}
+		out, err := protomodule.NewMessage(response)
+		if err != nil {
+			return nil, err
+		}
+		return out, nil
+	}
 }
 
-// String implements part of the starlark.Value interface
-func (c *unaryCall) String() string { return fmt.Sprintf("unary-rpc <%s>", c.name) }
+func newClientStreamingCall(method string, md protoreflect.MethodDescriptor, conn *grpc.ClientConn) func(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+	return func(thread *starlark.Thread, b *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+		var request starlark.Value
 
-// Type implements part of the starlark.Value interface
-func (*unaryCall) Type() string { return "grpc.UnaryClientCall" }
+		if err := starlark.UnpackArgs("ClientStreamingCall", args, kwargs,
+			"request", &request,
+		); err != nil {
+			return nil, err
+		}
 
-// Freeze implements part of the starlark.Value interface
-func (*unaryCall) Freeze() {} // immutable
+		msg, ok := protomodule.AsProtoMessage(request)
+		if !ok {
+			return nil, fmt.Errorf("failed to convert request argument to ProtoMessage: %v", request)
+		}
 
-// Truth implements part of the starlark.Value interface
-func (*unaryCall) Truth() starlark.Bool { return starlark.False }
+		ctx := context.Background()
 
-// Hash implements part of the starlark.Value interface
-func (c *unaryCall) Hash() (uint32, error) {
+		stream, err := conn.NewStream(ctx, &grpc.StreamDesc{
+			StreamName: string(md.Name()),
+			// Handler:       handler.HandleStream,
+			ServerStreams: md.IsStreamingServer(),
+			ClientStreams: md.IsStreamingClient(),
+		}, method)
+		if err != nil {
+			return nil, err
+		}
+
+		cstream := &clientStreamingCall{
+			ClientStream: stream,
+			name:         method,
+			md:           md.Output(),
+		}
+
+		if err := cstream.SendMsg(msg); err != nil {
+			return nil, err
+		}
+
+		if err := cstream.CloseSend(); err != nil {
+			return nil, err
+		}
+
+		return cstream, nil
+	}
+}
+
+type clientStreamingCall struct {
+	grpc.ClientStream
+	name string
+	md   protoreflect.MessageDescriptor
+}
+
+func (cs *clientStreamingCall) String() string {
+	return fmt.Sprintf("ClientStreamingCall<%s>", cs.name)
+}
+func (*clientStreamingCall) Type() string         { return "ClientStreamingCall" }
+func (*clientStreamingCall) Freeze()              {} // immutable
+func (*clientStreamingCall) Truth() starlark.Bool { return starlark.True }
+func (c *clientStreamingCall) Iterate() starlark.Iterator {
+	return &clientStreamIterator{
+		ClientStream: c.ClientStream,
+		md:           c.md,
+	}
+}
+
+func (c *clientStreamingCall) Hash() (uint32, error) {
 	return 0, fmt.Errorf("unhashable: %s", c.Type())
 }
 
-func (c *unaryCall) CallInternal(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-	if len(args) != 1 {
-		return nil, fmt.Errorf("%s requires a single argument (the request proto)", c)
-	}
-	request, ok := protomodule.AsProtoMessage(args.Index(0))
-	if !ok {
-		return nil, fmt.Errorf("failed to convert request argument to ProtoMessage: %v", args.Index(0))
-	}
-	ctx := context.Background()
-	response := dynamicpb.NewMessage(c.md.Output())
-	if err := c.conn.Invoke(ctx, c.name, request, response); err != nil {
-		return nil, err
-	}
-	out, err := protomodule.NewMessage(response)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
+func (c *clientStreamingCall) Name() string {
+	return c.name
 }
+
+type clientStreamIterator struct {
+	grpc.ClientStream
+	md protoreflect.MessageDescriptor
+}
+
+func (it *clientStreamIterator) Next(p *starlark.Value) bool {
+	msg := dynamicpb.NewMessage(it.md)
+	msg.Reset()
+	if err := it.ClientStream.RecvMsg(msg); err != nil {
+		if err != io.EOF {
+			log.Println("stream recvd error:", err)
+		}
+		return false
+	}
+
+	next, err := protomodule.NewMessage(msg)
+	if err != nil {
+		log.Println("stream message conversion error:", err)
+		return false
+	}
+	*p = next
+	return true
+}
+
+func (*clientStreamIterator) Done() {}
