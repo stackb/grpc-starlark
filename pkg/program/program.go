@@ -3,16 +3,13 @@ package program
 import (
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/stripe/skycfg/go/protomodule"
 	starlarkproto "go.starlark.net/lib/proto"
 	"go.starlark.net/starlark"
 	"go.starlark.net/starlarkstruct"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/reflect/protoregistry"
-	"google.golang.org/protobuf/types/descriptorpb"
 	"google.golang.org/protobuf/types/dynamicpb"
 
 	pkgnet "github.com/stackb/grpc-starlark/pkg/net"
@@ -94,18 +91,4 @@ func NewPredeclared(files *protoregistry.Files) starlark.StringDict {
 		"proto":  protomodule.NewModule(&types),
 		"struct": starlark.NewBuiltin("struct", starlarkstruct.Make),
 	}
-}
-
-func ParseProtoSetFile(filename string) (*descriptorpb.FileDescriptorSet, error) {
-	data, err := os.ReadFile(filename)
-	if err != nil {
-		return nil, fmt.Errorf("reading protoset file: %w", err)
-	}
-
-	var dpb descriptorpb.FileDescriptorSet
-	if err := proto.Unmarshal(data, &dpb); err != nil {
-		return nil, fmt.Errorf("parsing protoset file: %v", err)
-	}
-
-	return &dpb, nil
 }

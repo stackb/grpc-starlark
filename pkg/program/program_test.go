@@ -2,14 +2,19 @@ package program
 
 import (
 	"bytes"
+	_ "embed"
 	"os"
 	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/stackb/grpc-starlark/pkg/protodescriptorset"
 	"go.starlark.net/starlark"
-	"google.golang.org/protobuf/reflect/protoregistry"
+	"google.golang.org/protobuf/reflect/protodesc"
 )
+
+//go:embed routeguide_proto_descriptor.pb
+var routeguideProtodesciptorSet []byte
 
 func TestProgram(t *testing.T) {
 	testCases := []struct {
@@ -35,9 +40,17 @@ func TestProgram(t *testing.T) {
 			os.Setenv(k, v)
 		}
 
-		files := protoregistry.GlobalFiles
+		pds, err := protodescriptorset.Parse(routeguideProtodesciptorSet)
+		if err != nil {
+			t.Fatal(err)
+		}
+		files, err := protodesc.NewFiles(pds)
+		if err != nil {
+			t.Fatal(err)
+		}
 		globals := NewPredeclared(files)
-		_, err := starlark.ExecFile(
+
+		_, err = starlark.ExecFile(
 			thread,
 			"<in-memory>",
 			strings.NewReader(tc.program),
