@@ -13,10 +13,12 @@ type listener struct {
 }
 
 // String implements part of the starlark.Value interface
-func (*listener) String() string { return "listener" }
+func (l *listener) String() string {
+	return fmt.Sprintf("<net.Listener %v %v>", l.Listener.Addr().Network(), l.Listener.Addr())
+}
 
 // Type implements part of the starlark.Value interface
-func (*listener) Type() string { return "listener" }
+func (*listener) Type() string { return "net.Listener" }
 
 // Freeze implements part of the starlark.Value interface
 func (*listener) Freeze() {} // immutable
@@ -48,7 +50,7 @@ func (c *listener) Attr(name string) (starlark.Value, error) {
 func newListener(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	var network string
 	var address string
-	if err := starlark.UnpackArgs("Listener", args, kwargs,
+	if err := starlark.UnpackArgs("net.Listener", args, kwargs,
 		"network?", &network,
 		"address?", &address,
 	); err != nil {
@@ -58,12 +60,12 @@ func newListener(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tup
 		network = "tcp"
 	}
 	if address == "" {
-		address = "127.0.0.0:0"
+		address = "127.0.0.1:0"
 	}
 
 	l, err := net.Listen(network, address)
 	if err != nil {
-		return nil, fmt.Errorf("starting listener on %s: %w", address, err)
+		return nil, err
 	}
 	value := &listener{
 		Listener: l,
