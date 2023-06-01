@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "starlarkgrpc",
@@ -29,5 +29,15 @@ go_library(
         "@org_golang_google_protobuf//reflect/protoreflect",
         "@org_golang_google_protobuf//reflect/protoregistry",
         "@org_golang_google_protobuf//types/dynamicpb",
+    ],
+)
+
+go_test(
+    name = "starlarkgrpc_test",
+    srcs = ["module_test.go"],
+    embed = [":starlarkgrpc"],
+    deps = [
+        "@com_github_google_go_cmp//cmp",
+        "@net_starlark_go//starlark",
     ],
 )
