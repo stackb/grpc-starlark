@@ -90,13 +90,12 @@ function main {
 
     echo "========================================"
     test_get_feature
-    # echo "========================================"
-    # test_list_features
-    # echo "========================================"
-    # test_record_route
-    # echo "========================================"
-    # test_route_chat
-    exit 1
+    echo "========================================"
+    test_list_features
+    echo "========================================"
+    test_record_route
+    echo "========================================"
+    test_route_chat
     stop_server
 }
 

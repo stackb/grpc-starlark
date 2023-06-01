@@ -2,30 +2,6 @@
 """
 routeguidepb = proto.package("example.routeguide")
 
-def test_client_get_feature(client):
-    feature = client.GetFeature(routeguidepb.Point(
-        latitude = 407838351,
-        longitude = -746143763,
-    ))
-    print("client feature:", feature)
-
-def test_client_list_features(client):
-    print("listing features <begin>")
-
-    rect = routeguidepb.Rectangle(
-        lo = routeguidepb.Point(latitude = 1, longitude = 1),
-        hi = routeguidepb.Point(latitude = 10, longitude = 10),
-    )
-
-    call = client.ListFeatures(rect)
-
-    features = []
-    for feature in call:
-        features.append(feature)
-        print("client listed feature:", feature)
-
-    print("listing features <end>", features)
-
 def decode_feature(json_str):
     return proto.decode_json(routeguidepb.Feature, json_str)
 
@@ -149,9 +125,3 @@ listener = net.Listener(
 )
 
 server.start(listener)
-
-channel = grpc.Channel(listener.address)
-client = grpc.Client("example.routeguide.RouteGuide", channel)
-
-# test_client_get_feature(client)
-test_client_list_features(client)
