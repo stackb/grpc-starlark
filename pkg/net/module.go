@@ -12,6 +12,6 @@ import (
 var Module = &starlarkstruct.Module{
 	Name: "net",
 	Members: starlark.StringDict{
-		"Listener": starlark.NewBuiltin("Listener", newListener),
+		"Listener": starlark.NewBuiltin("net.Listener", newListener),
 	},
 }
