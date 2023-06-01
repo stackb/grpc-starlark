@@ -20,6 +20,10 @@ func TestThreadModule(t *testing.T) {
 			want:  "<built-in function thread.sleep>",
 		},
 		{
+			input:   "thread.sleep()",
+			wantErr: "thread.sleep: missing argument for millis",
+		},
+		{
 			input: "thread.sleep(-1)",
 			want:  "None",
 		},

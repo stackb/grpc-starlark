@@ -14,13 +14,13 @@ import (
 var Module = &starlarkstruct.Module{
 	Name: "os",
 	Members: starlark.StringDict{
-		"getenv": starlark.NewBuiltin("getenv", getEnv),
+		"getenv": starlark.NewBuiltin("os.getenv", getEnv),
 	},
 }
 
 func getEnv(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	var name string
-	if err := starlark.UnpackArgs("getenv", args, kwargs,
+	if err := starlark.UnpackArgs("os.getenv", args, kwargs,
 		"name", &name,
 	); err != nil {
 		return nil, err
