@@ -19,13 +19,6 @@ import (
 )
 
 func Load(filename string, src interface{}, reporter func(msg string), errorReporter func(err error), files *protoregistry.Files) error {
-	// newErrorf := func(msg string, args ...interface{}) error {
-	// 	err := fmt.Errorf(filename+": "+msg, args...)
-	// 	errorReporter(err)
-	// 	reporter(err.Error())
-	// 	return err
-	// }
-
 	predeclared := NewPredeclared(files)
 
 	_, _, err := newProgram(filename, src, predeclared, reporter, errorReporter, files)
