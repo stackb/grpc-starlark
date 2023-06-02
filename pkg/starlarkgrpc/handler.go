@@ -48,8 +48,6 @@ func (h *Handler) HandleStream(srv interface{}, ss grpc.ServerStream) error {
 		return err
 	}
 
-	log.Println("stream response:", response)
-
 	if h.md.IsStreamingClient() && !h.md.IsStreamingServer() {
 		if err := ss.SendMsg(response); err != nil {
 			return err
@@ -64,17 +62,17 @@ func (h *Handler) Handle(method protoreflect.MethodDescriptor, request protorefl
 	var args starlark.Tuple
 
 	if method.IsStreamingServer() && method.IsStreamingClient() {
-		context = makeStreamContext(method, ss)
+		context = newServerStream(ss, method)
 		args = starlark.Tuple{starlark.None, context}
 	} else if method.IsStreamingServer() {
-		context = makeStreamContext(method, ss)
+		context = newServerStream(ss, method)
 		msg, err := protomodule.NewMessage(request)
 		if err != nil {
 			return nil, err
 		}
 		args = starlark.Tuple{msg, context}
 	} else if method.IsStreamingClient() {
-		context = makeStreamContext(method, ss)
+		context = newServerStream(ss, method)
 		args = starlark.Tuple{starlark.None, context}
 	} else {
 		context = makeMethodContext(method)

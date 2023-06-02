@@ -12,30 +12,29 @@ import (
 	"google.golang.org/protobuf/types/dynamicpb"
 )
 
-type clientStream struct {
+type serverStream struct {
 	*starlarkstruct.Struct
-	stream grpc.ClientStream
+	stream grpc.ServerStream
 	md     protoreflect.MethodDescriptor
 }
 
-func (cs *clientStream) Iterate() starlark.Iterator {
-	return &streamIterator{cs.stream.RecvMsg, cs.md.Output()}
+func (cs *serverStream) Iterate() starlark.Iterator {
+	return &streamIterator{cs.stream.RecvMsg, cs.md.Input()}
 }
 
-func newClientStream(stream grpc.ClientStream, md protoreflect.MethodDescriptor) *clientStream {
-	return &clientStream{
+func newServerStream(stream grpc.ServerStream, md protoreflect.MethodDescriptor) *serverStream {
+	return &serverStream{
 		stream: stream,
 		md:     md,
 		Struct: starlarkstruct.FromStringDict(
-			Symbol("grpc.ClientStream"),
+			Symbol("grpc.ServerStream"),
 			starlark.StringDict{
 				"name":                starlark.String(md.Name()),
 				"fullname":            starlark.String(md.FullName()),
 				"is_streaming_client": starlark.Bool(md.IsStreamingClient()),
 				"is_streaming_server": starlark.Bool(md.IsStreamingServer()),
-				"recv": starlark.NewBuiltin("grpc.ClientStream.recv", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-					msg := dynamicpb.NewMessage(md.Output())
-					msg.Reset()
+				"recv": starlark.NewBuiltin("grpc.ServerStream.recv", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+					msg := dynamicpb.NewMessage(md.Input())
 					if err := stream.RecvMsg(msg); err != nil {
 						if err != io.EOF {
 							return nil, err
@@ -48,7 +47,7 @@ func newClientStream(stream grpc.ClientStream, md protoreflect.MethodDescriptor)
 					}
 					return next, nil
 				}),
-				"send": starlark.NewBuiltin("grpc.ClientStream.send", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+				"send": starlark.NewBuiltin("grpc.ServerStream.send", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 					for _, value := range args {
 						msg, ok := protomodule.AsProtoMessage(value)
 						if ok {
@@ -58,12 +57,6 @@ func newClientStream(stream grpc.ClientStream, md protoreflect.MethodDescriptor)
 						} else {
 							return nil, fmt.Errorf("failed to convert send argument to ProtoMessage: %v", value)
 						}
-					}
-					return starlark.None, nil
-				}),
-				"close_send": starlark.NewBuiltin("grpc.ClientStream.close_send", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-					if err := stream.CloseSend(); err != nil {
-						return nil, err
 					}
 					return starlark.None, nil
 				}),

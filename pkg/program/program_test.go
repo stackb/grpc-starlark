@@ -88,7 +88,7 @@ def call_list_features(client):
 		hi = pb.Point(longitude = 3, latitude = 4),
 	)
 	stream = client.ListFeatures(rect)
-	for response in stream.recv:
+	for response in stream:
 		print("ListFeatures:", response)
 	server.stop()
 
@@ -123,7 +123,7 @@ def call_route_chat(client):
 	stream.send(pb.RouteNote(message = 'A'))
 	stream.send(pb.RouteNote(message = 'B'))
 	stream.close_send()
-	for response in stream.recv:
+	for response in stream:
 		print("RouteChat:", response)
 	server.stop()
 

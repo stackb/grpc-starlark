@@ -30,7 +30,7 @@ func (*grpcClient) Type() string { return "grpc.Client" }
 func (*grpcClient) Freeze() {} // immutable
 
 // Truth implements part of the starlark.Value interface
-func (*grpcClient) Truth() starlark.Bool { return starlark.False }
+func (*grpcClient) Truth() starlark.Bool { return starlark.True }
 
 // Hash implements part of the starlark.Value interface
 func (c *grpcClient) Hash() (uint32, error) {
@@ -56,7 +56,7 @@ func (c *grpcClient) Attr(name string) (starlark.Value, error) {
 	}
 }
 
-func newClient(files *protoregistry.Files) func(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+func newGrpcClient(files *protoregistry.Files) func(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	return func(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 		var serviceName string
 		var channel *channel
@@ -137,7 +137,7 @@ func newClientStreamingCall(method string, md protoreflect.MethodDescriptor, con
 
 		ctx := context.Background()
 
-		stream, err := conn.NewStream(ctx, &grpc.StreamDesc{
+		clientStream, err := conn.NewStream(ctx, &grpc.StreamDesc{
 			StreamName:    string(md.Name()),
 			ServerStreams: md.IsStreamingServer(),
 			ClientStreams: md.IsStreamingClient(),
@@ -146,7 +146,7 @@ func newClientStreamingCall(method string, md protoreflect.MethodDescriptor, con
 			return nil, err
 		}
 
-		call := newClientStream(stream, md)
+		stream := newClientStream(clientStream, md)
 
 		if md.IsStreamingServer() && !md.IsStreamingClient() {
 			var in starlark.Value
@@ -161,15 +161,15 @@ func newClientStreamingCall(method string, md protoreflect.MethodDescriptor, con
 				return nil, fmt.Errorf("failed to convert request argument to ProtoMessage: %v", in)
 			}
 
-			if err := stream.SendMsg(msg); err != nil {
+			if err := clientStream.SendMsg(msg); err != nil {
 				return nil, err
 			}
 
-			if err := stream.CloseSend(); err != nil {
+			if err := clientStream.CloseSend(); err != nil {
 				return nil, err
 			}
 		}
 
-		return call, nil
+		return stream, nil
 	}
 }

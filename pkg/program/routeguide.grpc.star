@@ -44,7 +44,7 @@ def record_route(_, stream):
 
     """
     points = []
-    for point in stream.recv:
+    for point in stream:
         points.append(point)
     return pb.RouteSummary(
         point_count = len(points),
@@ -52,20 +52,20 @@ def record_route(_, stream):
         elapsed_time = 10,
     )
 
-def route_chat(_, context):
+def route_chat(_, stream):
     """route_chat implements a bidirectional streaming handler
 
     Args:
         _: the request object, which in this case is None
-        context: the stream context object
+        stream: the stream stream object
     Returns:
         None
 
     """
     notes = []
-    for note in context.recv:
+    for note in stream:
         notes.append(note)
-        context.send(note)
+        stream.send(note)
 
 server = grpc.Server()
 

@@ -17,8 +17,8 @@ import (
 
 // grpcServer implements starlark.Value for a grpc.Server.
 type grpcServer struct {
-	files    *protoregistry.Files
 	server   *grpc.Server
+	files    *protoregistry.Files
 	handlers HandlerMap
 }
 
@@ -34,7 +34,7 @@ func (*grpcServer) Type() string { return "grpc.Server" }
 func (*grpcServer) Freeze() {} // immutable
 
 // Truth implements part of the starlark.Value interface
-func (*grpcServer) Truth() starlark.Bool { return starlark.False }
+func (*grpcServer) Truth() starlark.Bool { return starlark.True }
 
 // Hash implements part of the starlark.Value interface
 func (c *grpcServer) Hash() (uint32, error) {
@@ -43,7 +43,7 @@ func (c *grpcServer) Hash() (uint32, error) {
 
 // AttrNames implements part of the starlark.HasAttrs interface
 func (c *grpcServer) AttrNames() []string {
-	return []string{"address", "register", "start", "stop"}
+	return []string{"register", "start", "stop"}
 }
 
 // Attr implements part of the starlark.HasAttrs interface
@@ -150,27 +150,23 @@ func (c *grpcServer) register(thread *starlark.Thread, fn *starlark.Builtin, arg
 				ClientStreams: true,
 				Handler:       c.HandleStream,
 			})
-			log.Printf("grpc.Server: Registered %s (bidi stream):", key)
 		} else if method.IsStreamingServer() {
 			gsd.Streams = append(gsd.Streams, grpc.StreamDesc{
 				StreamName:    string(method.Name()),
 				ServerStreams: true,
 				Handler:       c.HandleStream,
 			})
-			log.Printf("grpc.Server: Registered %s (server stream):", key)
 		} else if method.IsStreamingClient() {
 			gsd.Streams = append(gsd.Streams, grpc.StreamDesc{
 				StreamName:    string(method.Name()),
 				ClientStreams: true,
 				Handler:       c.HandleStream,
 			})
-			log.Printf("grpc.Server: Registered %s (client stream):", key)
 		} else {
 			gsd.Methods = append(gsd.Methods, grpc.MethodDesc{
 				MethodName: string(method.Name()),
 				Handler:    c.HandleMethod,
 			})
-			log.Printf("grpc.Server: Registered %s (unary method):", key)
 		}
 		c.handlers[key] = handler
 	}
@@ -205,8 +201,6 @@ func (s *grpcServer) HandleStream(srv interface{}, ss grpc.ServerStream) error {
 		return err
 	}
 
-	log.Println("stream response:", response)
-
 	if handler.md.IsStreamingClient() && !handler.md.IsStreamingServer() {
 		if err := ss.SendMsg(response); err != nil {
 			return err
@@ -219,7 +213,6 @@ func (s *grpcServer) HandleStream(srv interface{}, ss grpc.ServerStream) error {
 // HandleStream implements grpc.methodHandler for handling of unary calls.
 func (s *grpcServer) HandleMethod(srv interface{}, ctx context.Context, decode func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	stream := grpc.ServerTransportStreamFromContext(ctx)
-	log.Println("grpc.Server handle method:", stream.Method())
 
 	handler, ok := s.handlers[stream.Method()]
 	if !ok {
@@ -234,7 +227,6 @@ func (s *grpcServer) HandleMethod(srv interface{}, ctx context.Context, decode f
 
 	response, err := handler.Handle(handler.md, input, nil)
 	if err != nil {
-		log.Printf("handler return value error: %v", err)
 		return nil, err
 	}
 
