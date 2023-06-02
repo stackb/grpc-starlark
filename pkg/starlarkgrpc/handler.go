@@ -86,7 +86,9 @@ func (h *Handler) Handle(method protoreflect.MethodDescriptor, request protorefl
 	}
 
 	thread := new(starlark.Thread)
+	thread.Name = string(method.FullName())
 	thread.Print = h.reporter
+
 	resp, err := starlark.Call(thread, h.fn, args, []starlark.Tuple{})
 	if err != nil {
 		return nil, fmt.Errorf("%s error: %w", h.fn.String(), err)

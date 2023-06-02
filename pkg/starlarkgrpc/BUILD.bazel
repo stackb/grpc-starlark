@@ -5,6 +5,10 @@ go_library(
     srcs = [
         "channel.go",
         "client.go",
+        "client_stream.go",
+        "client_stream_close_send.go",
+        "client_stream_recv.go",
+        "client_stream_send.go",
         "error.go",
         "handler.go",
         "method_context.go",
@@ -39,6 +43,7 @@ go_test(
     embed = [":starlarkgrpc"],
     deps = [
         "//pkg/net",
+        "//pkg/thread",
         "@com_github_google_go_cmp//cmp",
         "@net_starlark_go//starlark",
     ],

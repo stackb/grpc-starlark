@@ -17,6 +17,7 @@ import (
 
 // grpcServer implements starlark.Value for a grpc.Server.
 type grpcServer struct {
+	files    *protoregistry.Files
 	server   *grpc.Server
 	handlers HandlerMap
 }
@@ -63,12 +64,12 @@ func (c *grpcServer) start(thread *starlark.Thread, fn *starlark.Builtin, args s
 	if err := starlark.UnpackPositionalArgs(fn.Name(), args, kwargs, 1, &listener); err != nil {
 		return nil, err
 	}
-	go func() {
-		log.Printf("grpc.Server listening on %v", listener.Addr())
-		if err := c.server.Serve(listener); err != nil {
-			log.Fatalln("grpc.Server error:", err)
-		}
-	}()
+	// go func() {
+	log.Printf("grpc.Server listening on %v", listener.Addr())
+	if err := c.server.Serve(listener); err != nil {
+		log.Fatalln("grpc.Server error:", err)
+	}
+	// }()
 	return starlark.None, nil
 }
 
@@ -96,7 +97,7 @@ func (c *grpcServer) register(thread *starlark.Thread, fn *starlark.Builtin, arg
 		return nil, err
 	}
 
-	sd, err := getServiceDescriptor(protoregistry.GlobalFiles, serviceName)
+	sd, err := getServiceDescriptor(c.files, serviceName)
 	if err != nil {
 		return nil, err
 	}
@@ -240,15 +241,18 @@ func (s *grpcServer) HandleMethod(srv interface{}, ctx context.Context, decode f
 	return response, err
 }
 
-func newServer(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-	if err := starlark.UnpackArgs("grpc.Server", args, kwargs); err != nil {
-		return nil, err
+func newServer(files *protoregistry.Files) func(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+	return func(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+		if err := starlark.UnpackArgs("grpc.Server", args, kwargs); err != nil {
+			return nil, err
+		}
+		value := &grpcServer{
+			files:    files,
+			server:   grpc.NewServer(),
+			handlers: make(map[string]*Handler),
+		}
+		return value, nil
 	}
-	value := &grpcServer{
-		server:   grpc.NewServer(),
-		handlers: make(map[string]*Handler),
-	}
-	return value, nil
 }
 
 func serviceNames(files *protoregistry.Files) (names []string) {

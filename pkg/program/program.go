@@ -2,10 +2,9 @@ package program
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/stripe/skycfg/go/protomodule"
-	starlarkproto "go.starlark.net/lib/proto"
+	libproto "go.starlark.net/lib/proto"
 	"go.starlark.net/starlark"
 	"go.starlark.net/starlarkstruct"
 	"google.golang.org/protobuf/reflect/protoreflect"
@@ -18,51 +17,59 @@ import (
 	"github.com/stackb/grpc-starlark/pkg/thread"
 )
 
-func Load(filename string, src interface{}, reporter func(msg string), errorReporter func(err error), files *protoregistry.Files) error {
-	predeclared := NewPredeclared(files)
-
-	_, _, err := newProgram(filename, src, predeclared, reporter, errorReporter, files)
-	if err != nil {
-		return err
-	}
-
-	return nil
+type Program struct {
+	Files         *protoregistry.Files
+	Reporter      func(msg string)
+	ErrorReporter func(err error)
+	Predeclared   starlark.StringDict
 }
 
-func newProgram(
-	filename string,
-	src interface{},
-	predeclared starlark.StringDict,
-	reporter func(msg string),
-	errorReporter func(err error),
-	files *protoregistry.Files,
-) (*starlark.StringDict, *starlark.Thread, error) {
-	newErrorf := func(msg string, args ...interface{}) error {
-		err := fmt.Errorf(filename+": "+msg, args...)
-		errorReporter(err)
-		return err
+func NewProgram(files *protoregistry.Files) *Program {
+	return &Program{
+		Files:       files,
+		Predeclared: newPredeclared(files),
+		Reporter: func(msg string) {
+			fmt.Println("grpc-starlark> ", msg)
+		},
+		ErrorReporter: func(err error) {
+			fmt.Println("grpc-starlark error> ", err.Error())
+		},
 	}
+}
 
-	_, program, err := starlark.SourceProgram(filename, src, predeclared.Has)
+func (p *Program) Init(filename string, src interface{}) (*starlark.StringDict, *starlark.Thread, error) {
+	_, program, err := starlark.SourceProgram(filename, src, p.Predeclared.Has)
 	if err != nil {
-		return nil, nil, newErrorf("source program error: %v", err)
+		return nil, nil, err
 	}
 
 	thread := new(starlark.Thread)
+	thread.Name = "main"
 	thread.Print = func(thread *starlark.Thread, msg string) {
-		reporter(msg)
+		p.Reporter(msg)
 	}
-	starlarkproto.SetPool(thread, files)
+	libproto.SetPool(thread, p.Files)
 
-	globals, err := program.Init(thread, predeclared)
+	globals, err := program.Init(thread, p.Predeclared)
 	if err != nil {
-		return nil, nil, newErrorf("eval: %w", err)
+		return nil, nil, err
 	}
 
 	return &globals, thread, nil
 }
 
-func NewPredeclared(files *protoregistry.Files) starlark.StringDict {
+func newPredeclared(files *protoregistry.Files) starlark.StringDict {
+	return starlark.StringDict{
+		"os":     pkgos.Module,
+		"net":    pkgnet.Module,
+		"thread": thread.Module,
+		"grpc":   starlarkgrpc.NewModule(files),
+		"proto":  protomodule.NewModule(fileRegistryTypes(files)),
+		"struct": starlark.NewBuiltin("struct", starlarkstruct.Make),
+	}
+}
+
+func fileRegistryTypes(files *protoregistry.Files) *protoregistry.Types {
 	var types protoregistry.Types
 	files.RangeFiles(func(fd protoreflect.FileDescriptor) bool {
 		messages := fd.Messages()
@@ -71,24 +78,14 @@ func NewPredeclared(files *protoregistry.Files) starlark.StringDict {
 			msg := dynamicpb.NewMessage(md)
 			msgType := msg.Type()
 			types.RegisterMessage(msgType)
-			log.Println("Registered proto message type:", md.FullName())
 		}
 		enums := fd.Enums()
 		for i := 0; i < enums.Len(); i++ {
 			ed := enums.Get(i)
 			enumType := dynamicpb.NewEnumType(ed)
 			types.RegisterEnum(enumType)
-			log.Println("Registered proto enum type:", ed.FullName())
 		}
 		return true
 	})
-
-	return starlark.StringDict{
-		"os":     pkgos.Module,
-		"net":    pkgnet.Module,
-		"thread": thread.Module,
-		"grpc":   starlarkgrpc.Module,
-		"proto":  protomodule.NewModule(&types),
-		"struct": starlark.NewBuiltin("struct", starlarkstruct.Make),
-	}
+	return &types
 }

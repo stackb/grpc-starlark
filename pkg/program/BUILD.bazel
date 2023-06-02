@@ -24,11 +24,16 @@ go_test(
     name = "program_test",
     srcs = ["program_test.go"],
     embed = [":program"],
-    embedsrcs = ["routeguide_proto_descriptor.pb"],
+    embedsrcs = [
+        "routeguide_proto_descriptor.pb",
+        "routeguide.grpc.star",
+    ],
     deps = [
+        "//example/routeguide:routeguide_go_proto",
         "//pkg/protodescriptorset",
         "@com_github_google_go_cmp//cmp",
         "@net_starlark_go//starlark",
+        "@org_golang_google_grpc//:go_default_library",
         "@org_golang_google_protobuf//reflect/protodesc",
     ],
 )

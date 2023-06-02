@@ -19,7 +19,7 @@ type serverRecv struct {
 	md   protoreflect.MessageDescriptor
 }
 
-func (*serverRecv) String() string       { return "RecvRPC" }
+func (s *serverRecv) String() string     { return "RecvRPC:" + s.name }
 func (*serverRecv) Type() string         { return "RecvRPC" }
 func (*serverRecv) Freeze()              {} // immutable
 func (*serverRecv) Truth() starlark.Bool { return starlark.False }

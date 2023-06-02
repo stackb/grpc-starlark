@@ -7,8 +7,6 @@ import (
 	"syscall"
 
 	"google.golang.org/protobuf/reflect/protodesc"
-	"google.golang.org/protobuf/reflect/protoreflect"
-	"google.golang.org/protobuf/reflect/protoregistry"
 
 	"github.com/stackb/grpc-starlark/pkg/program"
 	"github.com/stackb/grpc-starlark/pkg/protodescriptorset"
@@ -32,33 +30,21 @@ func run(args []string) error {
 	if err != nil {
 		return err
 	}
-
 	files, err := protodesc.NewFiles(dpb)
 	if err != nil {
 		return err
 	}
-	files.RangeFiles(func(fd protoreflect.FileDescriptor) bool {
-		if err := protoregistry.GlobalFiles.RegisterFile(fd); err != nil {
-			log.Printf("global registerFile error: %v", err)
-		}
-		return true
-	})
 
-	reporter := func(msg string) {
-		log.Println("grpc-starlark> ", msg)
-	}
-	errorReporter := func(err error) {
-		log.Println("grpc-starlark error> ", err.Error())
-	}
-	if err := program.Load(cfg.filename, cfg.in, reporter, errorReporter, files); err != nil {
+	pg := program.NewProgram(files)
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+
+	if _, _, err := pg.Init(cfg.filename, cfg.in); err != nil {
 		return err
 	}
 
-	log.Printf("grpc-starlark ready (use SIGTERM to exit)")
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	<-c
-	log.Println("SIGTERM recv'd (exiting)")
 
 	return nil
 }

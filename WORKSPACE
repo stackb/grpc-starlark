@@ -27,15 +27,6 @@ go_rules_dependencies()
 go_register_toolchains(version = "1.18.2")
 
 # ----------------------------------------------------
-# @bazel_gazelle
-# ----------------------------------------------------
-# gazelle:repository_macro go_repositories.bzl%go_repositories
-
-load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
-
-gazelle_dependencies()
-
-# ----------------------------------------------------
 # @build_stack_rules_proto
 # ----------------------------------------------------
 
@@ -60,3 +51,12 @@ go_core_deps()
 load("//:go_repositories.bzl", "go_repositories")
 
 go_repositories()
+
+# ----------------------------------------------------
+# @bazel_gazelle
+# ----------------------------------------------------
+# gazelle:repository_macro go_repositories.bzl%go_repositories
+
+load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
+
+gazelle_dependencies()
