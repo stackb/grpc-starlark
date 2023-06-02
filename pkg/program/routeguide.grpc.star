@@ -4,24 +4,23 @@ Used in testing.
 """
 pb = proto.package("example.routeguide")
 
-def get_feature(point, _stream):
+def get_feature(point):
     """get_feature implements a unary method handler
 
     Args:
         point: the requested Point
-        _stream: the method stream object
     Returns:
         a Feature, ideally nearest to the given point.
 
     """
     return pb.Feature(name = "point (%d,%d)" % (point.longitude, point.latitude))
 
-def list_features(rect, stream):
+def list_features(stream, rect):
     """list_features implements a server streaming handler
 
     Args:
+        stream: the stream object
         rect: the rectangle to get features within
-        stream: the stream stream object
     Returns:
         None
 
@@ -33,12 +32,11 @@ def list_features(rect, stream):
     for feature in features:
         stream.send(feature)
 
-def record_route(_, stream):
+def record_route(stream):
     """record_route implements a client streaming handler
 
     Args:
-        _: the request object, which in this case is None
-        stream: the stream stream object
+        stream: the stream object
     Returns:
         a RouteSummary with a summary of the traversed points.
 
@@ -52,12 +50,11 @@ def record_route(_, stream):
         elapsed_time = 10,
     )
 
-def route_chat(_, stream):
+def route_chat(stream):
     """route_chat implements a bidirectional streaming handler
 
     Args:
-        _: the request object, which in this case is None
-        stream: the stream stream object
+        stream: the stream object
     Returns:
         None
 

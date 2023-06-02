@@ -8,7 +8,6 @@ go_library(
         "client_stream.go",
         "error.go",
         "handler.go",
-        "method_context.go",
         "module.go",
         "server.go",
         "server_stream.go",
