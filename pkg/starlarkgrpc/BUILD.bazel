@@ -43,7 +43,10 @@ go_library(
 
 go_test(
     name = "starlarkgrpc_test",
-    srcs = ["module_test.go"],
+    srcs = [
+        "client_stream_test.go",
+        "module_test.go",
+    ],
     embed = [":starlarkgrpc"],
     deps = [
         "//pkg/starlarknet",

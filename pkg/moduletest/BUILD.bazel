@@ -1,0 +1,18 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "moduletest",
+    testonly = True,
+    srcs = [
+        "execfiletest.go",
+        "exprtest.go",
+    ],
+    importpath = "github.com/stackb/grpc-starlark/pkg/moduletest",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_github_google_go_cmp//cmp",
+        "@net_starlark_go//lib/proto",
+        "@net_starlark_go//starlark",
+        "@org_golang_google_protobuf//reflect/protoregistry",
+    ],
+)
