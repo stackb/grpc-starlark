@@ -64,10 +64,6 @@ func TestStarlarkGrpcModuleExpr(t *testing.T) {
 			expr:    "grpc.Server().start()",
 			wantErr: `grpc.Server.start: got 0 arguments, want 1`,
 		},
-		// {
-		// 	expr: "grpc.Server().start(net.Listener())",
-		// 	want: `None`,
-		// },
 		// grpc.Server.stop
 		{
 			expr: "grpc.Server().stop",
