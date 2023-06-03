@@ -1,4 +1,4 @@
-package thread
+package starlarkthread
 
 import (
 	"fmt"
