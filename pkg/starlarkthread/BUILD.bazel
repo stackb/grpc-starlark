@@ -1,12 +1,9 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
-    name = "net",
-    srcs = [
-        "listener.go",
-        "module.go",
-    ],
-    importpath = "github.com/stackb/grpc-starlark/pkg/net",
+    name = "starlarkthread",
+    srcs = ["module.go"],
+    importpath = "github.com/stackb/grpc-starlark/pkg/starlarkthread",
     visibility = ["//visibility:public"],
     deps = [
         "@net_starlark_go//starlark",
@@ -15,9 +12,9 @@ go_library(
 )
 
 go_test(
-    name = "net_test",
+    name = "starlarkthread_test",
     srcs = ["module_test.go"],
-    embed = [":net"],
+    embed = [":starlarkthread"],
     deps = [
         "@com_github_google_go_cmp//cmp",
         "@net_starlark_go//starlark",

@@ -11,10 +11,10 @@ import (
 	"google.golang.org/protobuf/reflect/protoregistry"
 	"google.golang.org/protobuf/types/dynamicpb"
 
-	pkgnet "github.com/stackb/grpc-starlark/pkg/net"
-	pkgos "github.com/stackb/grpc-starlark/pkg/os"
 	"github.com/stackb/grpc-starlark/pkg/starlarkgrpc"
-	"github.com/stackb/grpc-starlark/pkg/thread"
+	pkgnet "github.com/stackb/grpc-starlark/pkg/starlarknet"
+	pkgos "github.com/stackb/grpc-starlark/pkg/starlarkos"
+	thread "github.com/stackb/grpc-starlark/pkg/starlarkthread"
 )
 
 type Program struct {

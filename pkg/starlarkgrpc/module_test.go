@@ -9,8 +9,8 @@ import (
 	"go.starlark.net/starlark"
 	"google.golang.org/protobuf/reflect/protoregistry"
 
-	"github.com/stackb/grpc-starlark/pkg/net"
-	"github.com/stackb/grpc-starlark/pkg/thread"
+	net "github.com/stackb/grpc-starlark/pkg/starlarknet"
+	thread "github.com/stackb/grpc-starlark/pkg/starlarkthread"
 )
 
 func TestStarlarkGrpcModuleExpr(t *testing.T) {
