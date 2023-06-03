@@ -134,7 +134,6 @@ func newClientUnaryCall(method string, md protoreflect.MethodDescriptor, conn *g
 
 func newClientStreamingCall(method string, md protoreflect.MethodDescriptor, conn *grpc.ClientConn) func(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	return func(thread *starlark.Thread, b *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-
 		ctx := context.Background()
 
 		clientStream, err := conn.NewStream(ctx, &grpc.StreamDesc{
@@ -149,16 +148,16 @@ func newClientStreamingCall(method string, md protoreflect.MethodDescriptor, con
 		stream := newClientStream(clientStream, md)
 
 		if md.IsStreamingServer() && !md.IsStreamingClient() {
-			var in starlark.Value
+			var request starlark.Value
 			if err := starlark.UnpackArgs(string(md.Name()), args, kwargs,
-				"request", &in,
+				"request", &request,
 			); err != nil {
 				return nil, err
 			}
 
-			msg, ok := protomodule.AsProtoMessage(in)
+			msg, ok := protomodule.AsProtoMessage(request)
 			if !ok {
-				return nil, fmt.Errorf("failed to convert request argument to ProtoMessage: %v", in)
+				return nil, fmt.Errorf("failed to convert request argument to ProtoMessage: %v", request)
 			}
 
 			if err := clientStream.SendMsg(msg); err != nil {

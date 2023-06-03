@@ -8,9 +8,12 @@ import (
 	"go.starlark.net/starlark"
 	"go.starlark.net/starlarkstruct"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/dynamicpb"
 )
+
+var serverStreamSymbol = Symbol("grpc.ServerStream")
 
 type serverStream struct {
 	*starlarkstruct.Struct
@@ -22,32 +25,19 @@ func (cs *serverStream) Iterate() starlark.Iterator {
 	return &streamIterator{cs.stream.RecvMsg, cs.md.Input()}
 }
 
-func newServerStream(stream grpc.ServerStream, md protoreflect.MethodDescriptor) *serverStream {
+func newServerStream(stream grpc.ServerStream, descriptor protoreflect.MethodDescriptor) *serverStream {
 	return &serverStream{
 		stream: stream,
-		md:     md,
+		md:     descriptor,
 		Struct: starlarkstruct.FromStringDict(
-			Symbol("grpc.ServerStream"),
+			serverStreamSymbol,
 			starlark.StringDict{
-				"name":                starlark.String(md.Name()),
-				"fullname":            starlark.String(md.FullName()),
-				"is_streaming_client": starlark.Bool(md.IsStreamingClient()),
-				"is_streaming_server": starlark.Bool(md.IsStreamingServer()),
-				"recv": starlark.NewBuiltin("grpc.ServerStream.recv", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-					msg := dynamicpb.NewMessage(md.Input())
-					if err := stream.RecvMsg(msg); err != nil {
-						if err != io.EOF {
-							return nil, err
-						}
-						return starlark.None, nil
-					}
-					next, err := protomodule.NewMessage(msg)
-					if err != nil {
-						return nil, err
-					}
-					return next, nil
-				}),
-				"send": starlark.NewBuiltin("grpc.ServerStream.send", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+				"ctx":         newCtx(stream.Context()),
+				"descriptor":  newMethodDescriptor(descriptor),
+				"set_header":  starlark.NewBuiltin(string(serverStreamSymbol)+".set_header", applyHeaderFunc(stream.SetHeader)),
+				"send_header": starlark.NewBuiltin(string(serverStreamSymbol)+".send_header", applyHeaderFunc(stream.SendHeader)),
+				"set_trailer": starlark.NewBuiltin(string(serverStreamSymbol)+".set_trailer", setTrailerFunc(stream.SetTrailer)),
+				"send": starlark.NewBuiltin(string(serverStreamSymbol)+".send", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 					for _, value := range args {
 						msg, ok := protomodule.AsProtoMessage(value)
 						if ok {
@@ -60,7 +50,49 @@ func newServerStream(stream grpc.ServerStream, md protoreflect.MethodDescriptor)
 					}
 					return starlark.None, nil
 				}),
+				"recv": starlark.NewBuiltin(string(serverStreamSymbol)+".recv", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+					msg := dynamicpb.NewMessage(descriptor.Input())
+					if err := stream.RecvMsg(msg); err != nil {
+						if err != io.EOF {
+							return nil, err
+						}
+						return starlark.None, nil
+					}
+					next, err := protomodule.NewMessage(msg)
+					if err != nil {
+						return nil, err
+					}
+					return next, nil
+				}),
 			},
 		),
+	}
+}
+
+func applyHeaderFunc(apply func(md metadata.MD) error) func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+	return func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+		var md *md
+		if err := starlark.UnpackArgs(fn.Name(), args, kwargs,
+			"metadata", &md,
+		); err != nil {
+			return nil, err
+		}
+		if err := apply(md.md); err != nil {
+			return nil, err
+		}
+		return starlark.None, nil
+	}
+}
+
+func setTrailerFunc(apply func(md metadata.MD)) func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+	return func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+		var md *md
+		if err := starlark.UnpackArgs(fn.Name(), args, kwargs,
+			"metadata", &md,
+		); err != nil {
+			return nil, err
+		}
+		apply(md.md)
+		return starlark.None, nil
 	}
 }

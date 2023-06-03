@@ -7,8 +7,8 @@ import (
 	"go.starlark.net/starlarkstruct"
 )
 
-// Module os is a Starlark module of os-related functions and constants. The
-// module defines the following functions:
+// Module starlarkos is a Starlark module of os-related functions and constants.
+// The module defines the following functions:
 //
 //	getenv(name) - Gets the environment variable having the given name as a string, or None if not exists.
 var Module = &starlarkstruct.Module{
