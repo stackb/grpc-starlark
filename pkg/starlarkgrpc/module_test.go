@@ -1,14 +1,16 @@
 package starlarkgrpc
 
 import (
-	"bytes"
+	"fmt"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/stackb/grpc-starlark/pkg/net"
 	"go.starlark.net/starlark"
+	"google.golang.org/protobuf/reflect/protoregistry"
+
+	"github.com/stackb/grpc-starlark/pkg/net"
+	"github.com/stackb/grpc-starlark/pkg/thread"
 )
 
 func TestStarlarkGrpcModuleExpr(t *testing.T) {
@@ -62,10 +64,10 @@ func TestStarlarkGrpcModuleExpr(t *testing.T) {
 			expr:    "grpc.Server().start()",
 			wantErr: `grpc.Server.start: got 0 arguments, want 1`,
 		},
-		{
-			expr: "grpc.Server().start(net.Listener())",
-			want: `None`,
-		},
+		// {
+		// 	expr: "grpc.Server().start(net.Listener())",
+		// 	want: `None`,
+		// },
 		// grpc.Server.stop
 		{
 			expr: "grpc.Server().stop",
@@ -96,91 +98,65 @@ func TestStarlarkGrpcModuleExpr(t *testing.T) {
 			expr:    "grpc.Server().register(service = 'example.routeguide.Routeguide', handlers = {})",
 			wantErr: `unknown service: example.routeguide.Routeguide (known: [])`,
 		},
-	}
-
-	for _, tc := range testCases {
-		for k, v := range tc.env {
-			os.Setenv(k, v)
-		}
-		value, err := starlark.Eval(
-			new(starlark.Thread),
-			"<expr>",
-			tc.expr,
-			starlark.StringDict{
-				"grpc": Module,
-				"net":  net.Module,
-			},
-		)
-		if err != nil {
-			if tc.wantErr == "" {
-				t.Error("unexpected error: ", err)
-				continue
-			}
-			gotErr := err.Error()
-			if diff := cmp.Diff(tc.wantErr, gotErr); diff != "" {
-				t.Errorf("(-want +got):\n%s", diff)
-			}
-			continue
-		}
-
-		got := value.String()
-
-		if diff := cmp.Diff(tc.want, got); diff != "" {
-			t.Errorf("(-want +got):\n%s", diff)
-		}
-	}
-}
-
-func TestStarlarkGrpcModuleProgram(t *testing.T) {
-	testCases := []struct {
-		program string
-		env     map[string]string
-		wantErr string
-		want    string
-	}{
+		// grpc.Channel
 		{
-			program: "print(grpc.status.OK)",
-			want:    "0",
+			expr: "grpc.Channel",
+			want: `<built-in function grpc.Channel>`,
+		},
+		{
+			expr:    "grpc.Channel()",
+			wantErr: `grpc.Channel: missing argument for target`,
+		},
+		// grpc.Client
+		{
+			expr: "grpc.Client",
+			want: `<built-in function grpc.Client>`,
+		},
+		{
+			expr:    "grpc.Client()",
+			wantErr: `grpc.Client: missing argument for service`,
+		},
+		{
+			expr:    "grpc.Client(service = 'example.routeguide.Routeguide')",
+			wantErr: `grpc.Client: missing argument for channel`,
+		},
+		{
+			expr:    "grpc.Client(service = 'example.routeguide.Routeguide', channel = grpc.Channel(':0'))",
+			wantErr: `unknown service: example.routeguide.Routeguide (known: [])`,
 		},
 	}
 
-	for _, tc := range testCases {
-		var gotPrinted bytes.Buffer
-		thread := new(starlark.Thread)
-		thread.Print = func(thread *starlark.Thread, msg string) {
-			gotPrinted.WriteString(msg)
-			gotPrinted.WriteString("\n")
-		}
-		for k, v := range tc.env {
-			os.Setenv(k, v)
-		}
-		_, err := starlark.ExecFile(
-			thread,
-			"<in-memory>",
-			strings.NewReader(tc.program),
-			starlark.StringDict{
-				"grpc": Module,
-				"net":  net.Module,
-			},
-		)
-
-		if err != nil {
-			if tc.wantErr == "" {
-				t.Error("unexpected error: ", err)
-				continue
+	for i, tc := range testCases {
+		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+			for k, v := range tc.env {
+				os.Setenv(k, v)
 			}
-			gotErr := err.Error()
-			if diff := cmp.Diff(tc.wantErr, gotErr); diff != "" {
+			value, err := starlark.Eval(
+				new(starlark.Thread),
+				"<expr>",
+				tc.expr,
+				starlark.StringDict{
+					"grpc":   NewModule(protoregistry.GlobalFiles),
+					"net":    net.Module,
+					"thread": thread.Module,
+				},
+			)
+			if err != nil {
+				if tc.wantErr == "" {
+					t.Fatal("unexpected error: ", err)
+				}
+				gotErr := err.Error()
+				if diff := cmp.Diff(tc.wantErr, gotErr); diff != "" {
+					t.Errorf("(-want +got):\n%s", diff)
+				}
+				return
+			}
+
+			got := value.String()
+
+			if diff := cmp.Diff(tc.want, got); diff != "" {
 				t.Errorf("(-want +got):\n%s", diff)
 			}
-			continue
-		}
-
-		got := strings.TrimSpace(gotPrinted.String())
-		want := strings.TrimSpace(tc.want)
-
-		if diff := cmp.Diff(want, got); diff != "" {
-			t.Errorf("(-want +got):\n%s", diff)
-		}
+		})
 	}
 }

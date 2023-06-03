@@ -11,11 +11,10 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//pkg/program",
-        "@org_golang_google_protobuf//proto",
+        "//pkg/protodescriptorset",
         "@org_golang_google_protobuf//reflect/protodesc",
         "@org_golang_google_protobuf//reflect/protoreflect",
         "@org_golang_google_protobuf//reflect/protoregistry",
-        "@org_golang_google_protobuf//types/descriptorpb",
     ],
 )
 

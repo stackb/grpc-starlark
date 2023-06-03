@@ -48,8 +48,6 @@ func (h *Handler) HandleStream(srv interface{}, ss grpc.ServerStream) error {
 		return err
 	}
 
-	log.Println("stream response:", response)
-
 	if h.md.IsStreamingClient() && !h.md.IsStreamingServer() {
 		if err := ss.SendMsg(response); err != nil {
 			return err
@@ -60,33 +58,34 @@ func (h *Handler) HandleStream(srv interface{}, ss grpc.ServerStream) error {
 }
 
 func (h *Handler) Handle(method protoreflect.MethodDescriptor, request protoreflect.ProtoMessage, ss grpc.ServerStream) (proto.Message, error) {
-	var context starlark.Value
+	var stream starlark.Value
 	var args starlark.Tuple
 
 	if method.IsStreamingServer() && method.IsStreamingClient() {
-		context = makeStreamContext(method, ss)
-		args = starlark.Tuple{starlark.None, context}
+		stream = newServerStream(ss, method)
+		args = starlark.Tuple{stream}
 	} else if method.IsStreamingServer() {
-		context = makeStreamContext(method, ss)
+		stream = newServerStream(ss, method)
 		msg, err := protomodule.NewMessage(request)
 		if err != nil {
 			return nil, err
 		}
-		args = starlark.Tuple{msg, context}
+		args = starlark.Tuple{stream, msg}
 	} else if method.IsStreamingClient() {
-		context = makeStreamContext(method, ss)
-		args = starlark.Tuple{starlark.None, context}
+		stream = newServerStream(ss, method)
+		args = starlark.Tuple{stream}
 	} else {
-		context = makeMethodContext(method)
 		msg, err := protomodule.NewMessage(request)
 		if err != nil {
 			return nil, err
 		}
-		args = starlark.Tuple{msg, context}
+		args = starlark.Tuple{msg}
 	}
 
 	thread := new(starlark.Thread)
+	thread.Name = string(method.FullName())
 	thread.Print = h.reporter
+
 	resp, err := starlark.Call(thread, h.fn, args, []starlark.Tuple{})
 	if err != nil {
 		return nil, fmt.Errorf("%s error: %w", h.fn.String(), err)

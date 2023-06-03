@@ -3,15 +3,18 @@ package starlarkgrpc
 import (
 	"go.starlark.net/starlark"
 	"go.starlark.net/starlarkstruct"
+	"google.golang.org/protobuf/reflect/protoregistry"
 )
 
-var Module = &starlarkstruct.Module{
-	Name: "grpc",
-	Members: starlark.StringDict{
-		"status":  Status,
-		"Client":  starlark.NewBuiltin("grpc.Client", newClient),
-		"Channel": starlark.NewBuiltin("grpc.Channel", newChannel),
-		"Server":  starlark.NewBuiltin("grpc.Server", newServer),
-		"Error":   starlark.NewBuiltin("grpc.Error", newError),
-	},
+func NewModule(files *protoregistry.Files) *starlarkstruct.Module {
+	return &starlarkstruct.Module{
+		Name: "grpc",
+		Members: starlark.StringDict{
+			"status":  Status,
+			"Client":  starlark.NewBuiltin("grpc.Client", newGrpcClient(files)),
+			"Channel": starlark.NewBuiltin("grpc.Channel", newChannel),
+			"Server":  starlark.NewBuiltin("grpc.Server", newServer(files)),
+			"Error":   starlark.NewBuiltin("grpc.Error", newError),
+		},
+	}
 }

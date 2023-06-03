@@ -34,7 +34,7 @@ func (c *channel) Hash() (uint32, error) {
 
 func newChannel(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	var target string
-	if err := starlark.UnpackArgs("Channel", args, kwargs, "target", &target); err != nil {
+	if err := starlark.UnpackArgs("grpc.Channel", args, kwargs, "target", &target); err != nil {
 		return nil, err
 	}
 	var options []grpc.DialOption

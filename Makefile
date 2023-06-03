@@ -17,3 +17,7 @@ client:
 
 perf:
 	node example/module/dist/main.js
+
+routeguide_proto_descriptor:
+	bazel build //example/routeguide:routeguide_proto_descriptor
+	cp -f bazel-bin/example/routeguide/routeguide_proto_descriptor.pb pkg/program/
