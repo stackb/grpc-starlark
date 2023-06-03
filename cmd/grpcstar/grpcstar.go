@@ -14,7 +14,7 @@ import (
 
 func main() {
 	log.SetFlags(log.Flags() &^ (log.Ldate | log.Ltime))
-	log.SetPrefix("grpc-starlark: ")
+	log.SetPrefix("grpcstar: ")
 	if err := run(os.Args[1:]); err != nil {
 		log.Fatal(err)
 	}

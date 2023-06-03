@@ -10,7 +10,7 @@ handler method implementations.
 Download a binary from the releases page, or install from source:
 
 ```sh
-go install github.com/stackb/grpc-starlark/cmd/grpc-starlark@latest
+go install github.com/stackb/grpc-starlark/cmd/grpcstar@latest
 ```
 
 ## Usage
