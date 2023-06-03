@@ -1,8 +1,15 @@
 """routeguide.grpc.star contains a simple server implementation
 
 Used in testing.
+
+The client test functions have scope access to the client and server.
+Typical usage is to invoke the script, start the server in a separate thread via
+thread.timeout, wait for client return values, and stop the server upon success.
+
 """
 pb = proto.package("example.routeguide")
+
+# === [Server Handler Functions] ================================================
 
 def get_feature(point):
     """get_feature implements a unary method handler
@@ -64,8 +71,8 @@ def route_chat(stream):
         notes.append(note)
         stream.send(note)
 
+listener = net.Listener()
 server = grpc.Server()
-
 server.register("example.routeguide.RouteGuide", {
     "GetFeature": get_feature,
     "ListFeatures": list_features,
@@ -73,8 +80,42 @@ server.register("example.routeguide.RouteGuide", {
     "RouteChat": route_chat,
 })
 
-listener = net.Listener()
 channel = grpc.Channel(listener.address)
 client = grpc.Client("example.routeguide.RouteGuide", channel)
-
 thread.timeout(lambda: server.start(listener))
+
+# === [Client Call Functions] ================================================
+
+def call_get_feature():
+    point = pb.Point(longitude = 1, latitude = 2)
+    feature = client.GetFeature(point)
+    print("GetFeature:", feature)
+    server.stop()
+
+def call_list_features():
+    rect = pb.Rectangle(
+        lo = pb.Point(longitude = 1, latitude = 2),
+        hi = pb.Point(longitude = 3, latitude = 4),
+    )
+    stream = client.ListFeatures(rect)
+    for response in stream:
+        print("ListFeatures:", response)
+    server.stop()
+
+def call_record_route():
+    stream = client.RecordRoute()
+    stream.send(pb.Point(longitude = 1, latitude = 2))
+    stream.send(pb.Point(longitude = 3, latitude = 3))
+    stream.close_send()
+    response = stream.recv()
+    print("RecordRoute:", response)
+    server.stop()
+
+def call_route_chat():
+    stream = client.RouteChat()
+    stream.send(pb.RouteNote(message = "A"))
+    stream.send(pb.RouteNote(message = "B"))
+    stream.close_send()
+    for response in stream:
+        print("RouteChat:", response)
+    server.stop()

@@ -29,7 +29,6 @@ go_test(
         "routeguide.grpc.star",
     ],
     deps = [
-        "//example/routeguide:routeguide_go_proto",
         "//pkg/protodescriptorset",
         "@com_github_google_go_cmp//cmp",
         "@net_starlark_go//starlark",

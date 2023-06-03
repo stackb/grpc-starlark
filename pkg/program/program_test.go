@@ -3,8 +3,6 @@ package program
 import (
 	"bytes"
 	_ "embed"
-	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -20,7 +18,7 @@ import (
 var routeguideProtoDescriptor []byte
 
 //go:embed routeguide.grpc.star
-var routeguideServer string
+var routeguideGrpcStar string
 
 func TestProgram(t *testing.T) {
 
@@ -35,7 +33,6 @@ func TestProgram(t *testing.T) {
 
 	testCases := map[string]struct {
 		program     string
-		env         map[string]string
 		wantErr     string
 		wantPrinted string
 	}{
@@ -67,68 +64,26 @@ print(pb.RouteGuide)
 			wantErr: `Protobuf type "example.routeguide.RouteGuide" not found`,
 		},
 		"unary method": {
-			program: routeguideServer + `
-def call_get_feature(client):
-	point = pb.Point(longitude = 1, latitude = 2)
-	got = client.GetFeature(point)
-	print("GetFeature:", got)
-	server.stop()
-	
-call_get_feature(client)
-`,
+			program: routeguideGrpcStar + `call_get_feature()`,
 			wantPrinted: `
 GetFeature: <example.routeguide.Feature name:"point (1,2)">
 `,
 		},
 		"server streaming": {
-			program: routeguideServer + `
-def call_list_features(client):
-	rect = pb.Rectangle(
-		lo = pb.Point(longitude = 1, latitude = 2),
-		hi = pb.Point(longitude = 3, latitude = 4),
-	)
-	stream = client.ListFeatures(rect)
-	for response in stream:
-		print("ListFeatures:", response)
-	server.stop()
-
-call_list_features(client)
-		`,
+			program: routeguideGrpcStar + `call_list_features()`,
 			wantPrinted: `
 ListFeatures: <example.routeguide.Feature name:"lo (1,2)">
 ListFeatures: <example.routeguide.Feature name:"hi (1,4)">
 `,
 		},
 		"client streaming": {
-			program: routeguideServer + `
-def call_record_route(client):
-	stream = client.RecordRoute()
-	stream.send(pb.Point(longitude = 1, latitude = 2))
-	stream.send(pb.Point(longitude = 3, latitude = 3))
-	stream.close_send()
-	response = stream.recv()
-	print("RecordRoute:", response)
-	server.stop()
-
-call_record_route(client)
-		`,
+			program: routeguideGrpcStar + `call_record_route()`,
 			wantPrinted: `
 RecordRoute: <example.routeguide.RouteSummary point_count:2 distance:2 elapsed_time:10>
 `,
 		},
 		"bidi streaming": {
-			program: routeguideServer + `
-def call_route_chat(client):
-	stream = client.RouteChat()
-	stream.send(pb.RouteNote(message = 'A'))
-	stream.send(pb.RouteNote(message = 'B'))
-	stream.close_send()
-	for response in stream:
-		print("RouteChat:", response)
-	server.stop()
-
-call_route_chat(client)
-		`,
+			program: routeguideGrpcStar + `call_route_chat()`,
 			wantPrinted: `
 RouteChat: <example.routeguide.RouteNote message:"A">
 RouteChat: <example.routeguide.RouteNote message:"B">
@@ -138,31 +93,13 @@ RouteChat: <example.routeguide.RouteNote message:"B">
 
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
-			// address is set by the starlark program by printing a magic string
-			// like '!address ADDRESS'
-			var address string
-
 			var printed bytes.Buffer
 			thread := new(starlark.Thread)
 			thread.Name = "main:" + name
 			thread.Print = func(thread *starlark.Thread, msg string) {
 				t.Log(msg)
-				fmt.Println(msg)
-				if strings.HasPrefix(msg, "!address") {
-					fields := strings.Fields(address)
-					address = fields[1]
-					return
-				}
 				printed.WriteString(msg)
 				printed.WriteString("\n")
-			}
-			// thread.Load = func(thread *starlark.Thread, module string) (starlark.StringDict, error) {
-			// 	if module == "routeguide_server.grpc.star" {
-
-			// 	}
-			// }
-			for k, v := range tc.env {
-				os.Setenv(k, v)
 			}
 
 			globals := newPredeclared(files)
