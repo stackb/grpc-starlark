@@ -5,18 +5,12 @@ grpc-starlark:
 server:
 	bazel build \
 		//example/routeguide:routeguide_proto_descriptor \
-		//cmd/grpc-starlark
+		//cmd/grpcstar
 
 serve:
-	bazel-bin/cmd/grpc-starlark/grpc-starlark_/grpc-starlark \
+	bazel-bin/cmd/grpcstar/grpcstar_/grpcstar \
 		-protoset=bazel-bin/example/routeguide/routeguide_proto_descriptor.pb \
-		-load=example/routeguide/routeguide.grpc.star
-
-client:
-	cd example/module && npx tsc
-
-perf:
-	node example/module/dist/main.js
+		pkg/program/routeguide.grpc.star
 
 routeguide_proto_descriptor:
 	bazel build //example/routeguide:routeguide_proto_descriptor
