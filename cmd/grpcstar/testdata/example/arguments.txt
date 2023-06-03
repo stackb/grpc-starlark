@@ -1,2 +1,0 @@
---before=AddJarManifestEntry.before.pb
---after=AddJarManifestEntry.after.pb
