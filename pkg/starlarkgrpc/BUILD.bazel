@@ -37,8 +37,8 @@ go_test(
     srcs = ["module_test.go"],
     embed = [":starlarkgrpc"],
     deps = [
-        "//pkg/net",
-        "//pkg/thread",
+        "//pkg/starlarknet",
+        "//pkg/starlarkthread",
         "@com_github_google_go_cmp//cmp",
         "@net_starlark_go//starlark",
         "@org_golang_google_protobuf//reflect/protoregistry",

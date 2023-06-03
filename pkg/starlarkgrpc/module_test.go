@@ -9,8 +9,8 @@ import (
 	"go.starlark.net/starlark"
 	"google.golang.org/protobuf/reflect/protoregistry"
 
-	"github.com/stackb/grpc-starlark/pkg/net"
-	"github.com/stackb/grpc-starlark/pkg/thread"
+	"github.com/stackb/grpc-starlark/pkg/starlarknet"
+	"github.com/stackb/grpc-starlark/pkg/starlarkthread"
 )
 
 func TestStarlarkGrpcModuleExpr(t *testing.T) {
@@ -133,8 +133,8 @@ func TestStarlarkGrpcModuleExpr(t *testing.T) {
 				tc.expr,
 				starlark.StringDict{
 					"grpc":   NewModule(protoregistry.GlobalFiles),
-					"net":    net.Module,
-					"thread": thread.Module,
+					"net":    starlarknet.Module,
+					"thread": starlarkthread.Module,
 				},
 			)
 			if err != nil {

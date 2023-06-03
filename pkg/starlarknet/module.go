@@ -1,4 +1,4 @@
-package net
+package starlarknet
 
 import (
 	"go.starlark.net/starlark"

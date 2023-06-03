@@ -1,51 +1,54 @@
-package net
+package starlarkos
 
 import (
+	"os"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	"go.starlark.net/starlark"
 )
 
-func TestNetModule(t *testing.T) {
+func TestOsModule(t *testing.T) {
 	testCases := []struct {
 		input   string
+		env     map[string]string
 		wantErr string
 		want    string
 	}{
 		{
-			input: "net.Listener",
-			want:  "<built-in function net.Listener>",
+			input: "os.getenv",
+			want:  "<built-in function os.getenv>",
 		},
 		{
-			input: "net.Listener(network = 'tcp', address='localhost:1301')",
-			want:  "<net.Listener tcp 127.0.0.1:1301>",
+			input:   "os.getenv()",
+			wantErr: "os.getenv: missing argument for name",
 		},
 		{
-			input: "net.Listener().network",
-			want:  `"tcp"`,
+			input: "os.getenv('FOO')",
+			want:  "None",
 		},
 		{
-			input: "net.Listener(address='localhost:1300').address",
-			want:  `"127.0.0.1:1300"`,
+			input: "os.getenv('FOO')",
+			env:   map[string]string{"FOO": "BAR"},
+			want:  "BAR",
 		},
 		{
-			input: "net.Listener(address=':1302')",
-			want:  "<net.Listener tcp [::]:1302>",
-		},
-		{
-			input: "net.Listener(address=':1303')",
-			want:  "<net.Listener tcp [::]:1303>",
+			input: "os.getenv('FOO')",
+			env:   map[string]string{"FOO": ""},
+			want:  "",
 		},
 	}
 
 	for _, tc := range testCases {
+		for k, v := range tc.env {
+			os.Setenv(k, v)
+		}
 		value, err := starlark.Eval(
 			new(starlark.Thread),
 			"<expr>",
 			tc.input,
 			starlark.StringDict{
-				"net": Module,
+				"os": Module,
 			},
 		)
 		if err != nil {
