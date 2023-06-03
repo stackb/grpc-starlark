@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	starlarkproto "go.starlark.net/lib/proto"
+	libproto "go.starlark.net/lib/proto"
 	"go.starlark.net/starlark"
 	"google.golang.org/protobuf/reflect/protodesc"
 
@@ -103,7 +103,7 @@ RouteChat: <example.routeguide.RouteNote message:"B">
 			}
 
 			globals := newPredeclared(files)
-			starlarkproto.SetPool(thread, files)
+			libproto.SetPool(thread, files)
 
 			_, err = starlark.ExecFile(
 				thread,

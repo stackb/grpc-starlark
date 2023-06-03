@@ -13,8 +13,6 @@ go_library(
         "//pkg/program",
         "//pkg/protodescriptorset",
         "@org_golang_google_protobuf//reflect/protodesc",
-        "@org_golang_google_protobuf//reflect/protoreflect",
-        "@org_golang_google_protobuf//reflect/protoregistry",
     ],
 )
 

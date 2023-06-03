@@ -41,5 +41,6 @@ go_test(
         "//pkg/thread",
         "@com_github_google_go_cmp//cmp",
         "@net_starlark_go//starlark",
+        "@org_golang_google_protobuf//reflect/protoregistry",
     ],
 )
