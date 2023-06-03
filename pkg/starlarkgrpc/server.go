@@ -193,7 +193,7 @@ func (s *grpcServer) HandleStream(srv interface{}, ss grpc.ServerStream) error {
 		}
 	}
 
-	response, err := handler.Handle(handler.md, request, ss)
+	response, err := handler.handle(handler.md, request, ss.Context(), ss, nil)
 	if err != nil {
 		log.Printf("handler return value error: %v", err)
 		return err
@@ -210,12 +210,12 @@ func (s *grpcServer) HandleStream(srv interface{}, ss grpc.ServerStream) error {
 
 // HandleStream implements grpc.methodHandler for handling of unary calls.
 func (s *grpcServer) HandleMethod(srv interface{}, ctx context.Context, decode func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	stream := grpc.ServerTransportStreamFromContext(ctx)
+	sts := grpc.ServerTransportStreamFromContext(ctx)
 
-	handler, ok := s.handlers[stream.Method()]
+	handler, ok := s.handlers[sts.Method()]
 	if !ok {
-		log.Println("handler not found:", stream.Method())
-		return nil, status.Error(codes.Unimplemented, stream.Method())
+		log.Println("handler not found:", sts.Method())
+		return nil, status.Error(codes.Unimplemented, sts.Method())
 	}
 
 	input := dynamicpb.NewMessage(handler.md.Input())
@@ -223,7 +223,7 @@ func (s *grpcServer) HandleMethod(srv interface{}, ctx context.Context, decode f
 		return nil, err
 	}
 
-	response, err := handler.Handle(handler.md, input, nil)
+	response, err := handler.handle(handler.md, input, ctx, nil, sts)
 	if err != nil {
 		return nil, err
 	}

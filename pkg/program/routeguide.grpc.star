@@ -11,10 +11,11 @@ pb = proto.package("example.routeguide")
 
 # === [Server Handler Functions] ================================================
 
-def get_feature(point):
+def get_feature(_stream, point):
     """get_feature implements a unary method handler
 
     Args:
+        _stream: the stream object
         point: the requested Point
     Returns:
         a Feature, ideally nearest to the given point.
