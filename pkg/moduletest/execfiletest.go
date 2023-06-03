@@ -13,10 +13,10 @@ import (
 
 type ExecFileTests map[string]*ExecFileTest
 
-func (tt ExecFileTests) TestAll(t *testing.T, files *protoregistry.Files, globals starlark.StringDict) {
+func (tt ExecFileTests) Run(t *testing.T, files *protoregistry.Files, globals starlark.StringDict) {
 	for name, tc := range tt {
 		t.Run(name, func(t *testing.T) {
-			tc.Test(t, name, files, globals)
+			tc.Run(t, name, files, globals)
 		})
 	}
 }
@@ -28,7 +28,7 @@ type ExecFileTest struct {
 	Want    string
 }
 
-func (tc *ExecFileTest) Test(t *testing.T, name string, files *protoregistry.Files, globals starlark.StringDict) {
+func (tc *ExecFileTest) Run(t *testing.T, name string, files *protoregistry.Files, globals starlark.StringDict) {
 	var printed bytes.Buffer
 	thread := new(starlark.Thread)
 	thread.Name = "main:" + name

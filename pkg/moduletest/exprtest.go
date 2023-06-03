@@ -10,10 +10,10 @@ import (
 
 type ExprTests []*ExprTest
 
-func (tt ExprTests) TestAll(t *testing.T, globals starlark.StringDict) {
+func (tt ExprTests) Run(t *testing.T, globals starlark.StringDict) {
 	for _, tc := range tt {
 		t.Run(tc.Expr, func(t *testing.T) {
-			tc.Test(t, globals)
+			tc.Run(t, globals)
 		})
 	}
 }
@@ -25,7 +25,7 @@ type ExprTest struct {
 	Want    string
 }
 
-func (tc *ExprTest) Test(t *testing.T, globals starlark.StringDict) {
+func (tc *ExprTest) Run(t *testing.T, globals starlark.StringDict) {
 	for k, v := range tc.Env {
 		os.Setenv(k, v)
 	}
