@@ -11,8 +11,13 @@ import (
 	"go.starlark.net/starlark"
 )
 
-func ExprTests(t *testing.T, globals starlark.StringDict, tt []*ExprTest) {
+type ExprTestOption func(*ExprTest)
+
+func ExprTests(t *testing.T, globals starlark.StringDict, tt []*ExprTest, options ...ExprTestOption) {
 	for _, tc := range tt {
+		for _, opt := range options {
+			opt(tc)
+		}
 		t.Run(tc.Expr, func(t *testing.T) {
 			tc.Run(t, globals)
 		})
@@ -26,6 +31,8 @@ type ExprTest struct {
 	WantElapsed time.Duration     // Optional expected min test time
 	WantPrinted string            // Optional output of 'print'
 	Want        string
+	Before      func(t *testing.T, globals starlark.StringDict) starlark.StringDict // Optional function to run at the end
+	After       func(t *testing.T, value starlark.Value)                            // Optional function to run at the end
 }
 
 func (tc *ExprTest) Run(t *testing.T, globals starlark.StringDict) {
@@ -41,6 +48,10 @@ func (tc *ExprTest) Run(t *testing.T, globals starlark.StringDict) {
 	thread.Print = func(thread *starlark.Thread, msg string) {
 		gotPrinted.WriteString(msg)
 		gotPrinted.WriteString("\n")
+	}
+
+	if tc.Before != nil {
+		globals = tc.Before(t, globals)
 	}
 
 	value, err := starlark.Eval(
@@ -73,5 +84,9 @@ func (tc *ExprTest) Run(t *testing.T, globals starlark.StringDict) {
 
 	if gotElapsed < tc.WantElapsed {
 		t.Errorf("expected test case time elapsed to be at least %v (got %v)", tc.WantElapsed, gotElapsed)
+	}
+
+	if tc.After != nil {
+		tc.After(t, value)
 	}
 }

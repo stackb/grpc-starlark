@@ -72,6 +72,14 @@ def go_repositories():
         version = "v0.0.0-20230310173818-32f1caf87195",
     )
     go_repository(
+        name = "com_github_davecgh_go_spew",
+        build_file_proto_mode = "disable_global",
+        importpath = "github.com/davecgh/go-spew",
+        sum = "h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=",
+        version = "v1.1.1",
+    )
+
+    go_repository(
         name = "com_github_envoyproxy_go_control_plane",
         build_file_proto_mode = "disable_global",
         importpath = "github.com/envoyproxy/go-control-plane",
@@ -128,12 +136,35 @@ def go_repositories():
         version = "v0.0.0-20170820004349-d65d576e9348",
     )
     go_repository(
+        name = "com_github_pmezard_go_difflib",
+        build_file_proto_mode = "disable_global",
+        importpath = "github.com/pmezard/go-difflib",
+        sum = "h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=",
+        version = "v1.0.0",
+    )
+
+    go_repository(
         name = "com_github_prometheus_client_model",
         build_file_proto_mode = "disable_global",
         importpath = "github.com/prometheus/client_model",
         sum = "h1:gQz4mCbXsO+nc9n1hCxHcGA3Zx3Eo+UHZoInFGUIXNM=",
         version = "v0.0.0-20190812154241-14fe0d1b01d4",
     )
+    go_repository(
+        name = "com_github_stretchr_objx",
+        build_file_proto_mode = "disable_global",
+        importpath = "github.com/stretchr/objx",
+        sum = "h1:1zr/of2m5FGMsad5YfcqgdqdWrIhu+EBEJRhR1U7z/c=",
+        version = "v0.5.0",
+    )
+    go_repository(
+        name = "com_github_stretchr_testify",
+        build_file_proto_mode = "disable_global",
+        importpath = "github.com/stretchr/testify",
+        sum = "h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcUk=",
+        version = "v1.8.4",
+    )
+
     go_repository(
         name = "com_github_stripe_skycfg",
         build_file_proto_mode = "disable_global",
@@ -1009,6 +1040,14 @@ def go_repositories():
         sum = "h1:mUhvW9EsL+naU5Q3cakzfE91YhliOondGd6ZrsDBHQE=",
         version = "v2.2.1",
     )
+    go_repository(
+        name = "in_gopkg_yaml_v3",
+        build_file_proto_mode = "disable_global",
+        importpath = "gopkg.in/yaml.v3",
+        sum = "h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=",
+        version = "v3.0.1",
+    )
+
     go_repository(
         name = "net_starlark_go",
         build_file_proto_mode = "disable_global",
