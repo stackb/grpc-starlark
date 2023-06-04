@@ -68,9 +68,9 @@ func newGrpcClient(files *protoregistry.Files) func(thread *starlark.Thread, _ *
 			return nil, err
 		}
 
-		sd, err := getServiceDescriptor(files, serviceName)
-		if err != nil {
-			return nil, err
+		sd, ok := serviceDescriptorByName(files, serviceName)
+		if !ok {
+			return nil, fmt.Errorf("unknown service: %s (known: %v)", serviceName, serviceNames(files))
 		}
 
 		client := &grpcClient{

@@ -9,6 +9,7 @@ import (
 
 type config struct {
 	protosetFile string
+	logFile      string
 	filename     string
 	in           io.ReadCloser
 }
@@ -17,6 +18,7 @@ func parseConfig(args []string) (*config, error) {
 	cfg := new(config)
 
 	flags := flag.NewFlagSet("grpc-starlark", flag.ExitOnError)
+	flags.StringVar(&cfg.logFile, "log_file", "", "Optional filename to emit log output to")
 	flags.StringVar(&cfg.protosetFile, "protoset", "", "filepath to proto descriptor set")
 
 	if err := flags.Parse(args); err != nil {

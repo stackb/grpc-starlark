@@ -95,10 +95,11 @@ func (c *grpcServer) register(thread *starlark.Thread, fn *starlark.Builtin, arg
 		return nil, err
 	}
 
-	sd, err := getServiceDescriptor(c.files, serviceName)
-	if err != nil {
-		return nil, err
+	sd, ok := serviceDescriptorByName(c.files, serviceName)
+	if !ok {
+		return nil, fmt.Errorf("unknown service: %s (known: %v)", serviceName, serviceNames(c.files))
 	}
+
 	gsd := grpc.ServiceDesc{ServiceName: string(sd.FullName()), HandlerType: (*interface{})(nil)}
 
 	methods := sd.Methods()
@@ -264,7 +265,7 @@ func grpcServerServiceInfoNames(server *grpc.Server) (names []string) {
 	return
 }
 
-func getServiceDescriptor(files *protoregistry.Files, name string) (protoreflect.ServiceDescriptor, error) {
+func serviceDescriptorByName(files *protoregistry.Files, name string) (protoreflect.ServiceDescriptor, bool) {
 	var sd protoreflect.ServiceDescriptor
 	files.RangeFiles(func(fd protoreflect.FileDescriptor) bool {
 		services := fd.Services()
@@ -278,7 +279,22 @@ func getServiceDescriptor(files *protoregistry.Files, name string) (protoreflect
 		return true
 	})
 	if sd == nil {
-		return nil, fmt.Errorf("unknown service: %s (known: %v)", name, serviceNames(files))
+		return nil, false
 	}
-	return sd, nil
+	return sd, true
+}
+
+func methodDescriptorByName(files *protoregistry.Files, serviceName, methodName string) (md protoreflect.MethodDescriptor, ok bool) {
+	service, ok := serviceDescriptorByName(files, serviceName)
+	if !ok {
+		return nil, false
+	}
+	methods := service.Methods()
+	for i := 0; i < methods.Len(); i++ {
+		v := methods.Get(i)
+		if string(v.Name()) == string(methodName) {
+			return v, true
+		}
+	}
+	return nil, false
 }

@@ -16,22 +16,21 @@ type ExecFileTests map[string]*ExecFileTest
 func (tt ExecFileTests) Run(t *testing.T, files *protoregistry.Files, globals starlark.StringDict) {
 	for name, tc := range tt {
 		t.Run(name, func(t *testing.T) {
-			tc.Run(t, name, files, globals)
+			tc.Run(t, files, globals)
 		})
 	}
 }
 
 type ExecFileTest struct {
-	Expr    string
+	Source  string
 	Env     map[string]string
 	WantErr string
 	Want    string
 }
 
-func (tc *ExecFileTest) Run(t *testing.T, name string, files *protoregistry.Files, globals starlark.StringDict) {
+func (tc *ExecFileTest) Run(t *testing.T, files *protoregistry.Files, globals starlark.StringDict) {
 	var printed bytes.Buffer
 	thread := new(starlark.Thread)
-	thread.Name = "main:" + name
 	thread.Print = func(thread *starlark.Thread, msg string) {
 		t.Log(msg)
 		printed.WriteString(msg)
@@ -43,7 +42,7 @@ func (tc *ExecFileTest) Run(t *testing.T, name string, files *protoregistry.File
 	_, err := starlark.ExecFile(
 		thread,
 		"<in-memory>",
-		strings.NewReader(tc.Expr),
+		strings.NewReader(tc.Source),
 		globals,
 	)
 
