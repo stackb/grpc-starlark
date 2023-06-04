@@ -1,16 +1,17 @@
 package moduletest
 
 import (
+	"bytes"
 	"os"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"go.starlark.net/starlark"
 )
 
-type ExprTests []*ExprTest
-
-func (tt ExprTests) Run(t *testing.T, globals starlark.StringDict) {
+func ExprTests(t *testing.T, globals starlark.StringDict, tt []*ExprTest) {
 	for _, tc := range tt {
 		t.Run(tc.Expr, func(t *testing.T) {
 			tc.Run(t, globals)
@@ -19,18 +20,31 @@ func (tt ExprTests) Run(t *testing.T, globals starlark.StringDict) {
 }
 
 type ExprTest struct {
-	Expr    string
-	Env     map[string]string
-	WantErr string
-	Want    string
+	Expr        string            // Input expression
+	Env         map[string]string // Optional env vars
+	WantErr     string            // Optional expected error
+	WantElapsed time.Duration     // Optional expected min test time
+	WantPrinted string            // Optional output of 'print'
+	Want        string
 }
 
 func (tc *ExprTest) Run(t *testing.T, globals starlark.StringDict) {
 	for k, v := range tc.Env {
 		os.Setenv(k, v)
 	}
+
+	start := time.Now()
+
+	thread := new(starlark.Thread)
+
+	var gotPrinted bytes.Buffer
+	thread.Print = func(thread *starlark.Thread, msg string) {
+		gotPrinted.WriteString(msg)
+		gotPrinted.WriteString("\n")
+	}
+
 	value, err := starlark.Eval(
-		new(starlark.Thread),
+		thread,
 		"<expr>",
 		tc.Expr,
 		globals,
@@ -47,7 +61,17 @@ func (tc *ExprTest) Run(t *testing.T, globals starlark.StringDict) {
 	}
 
 	got := value.String()
+	gotElapsed := time.Since(start)
+
 	if diff := cmp.Diff(tc.Want, got); diff != "" {
 		t.Errorf("expr (-want +got):\n%s", diff)
+	}
+
+	if diff := cmp.Diff(strings.TrimSpace(tc.WantPrinted), strings.TrimSpace(gotPrinted.String())); diff != "" {
+		t.Errorf("print (-want +got):\n%s", diff)
+	}
+
+	if gotElapsed < tc.WantElapsed {
+		t.Errorf("expected test case time elapsed to be at least %v (got %v)", tc.WantElapsed, gotElapsed)
 	}
 }

@@ -9,7 +9,9 @@ import (
 )
 
 func TestOsModule(t *testing.T) {
-	moduletest.ExprTests([]*moduletest.ExprTest{
+	moduletest.ExprTests(t, starlark.StringDict{
+		"os": Module,
+	}, []*moduletest.ExprTest{
 		{
 			Expr: "os.getenv",
 			Want: "<built-in function os.getenv>",
@@ -32,7 +34,5 @@ func TestOsModule(t *testing.T) {
 			Env:  map[string]string{"FOO": ""},
 			Want: `""`,
 		},
-	}).Run(t, starlark.StringDict{
-		"os": Module,
 	})
 }

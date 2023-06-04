@@ -3,66 +3,37 @@ package starlarknet
 import (
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
+	"github.com/stackb/grpc-starlark/pkg/moduletest"
 	"go.starlark.net/starlark"
 )
 
 func TestNetModule(t *testing.T) {
-	testCases := []struct {
-		input   string
-		wantErr string
-		want    string
-	}{
+	moduletest.ExprTests(t, starlark.StringDict{
+		"net": Module,
+	}, []*moduletest.ExprTest{
 		{
-			input: "net.Listener",
-			want:  "<built-in function net.Listener>",
+			Expr: "net.Listener",
+			Want: "<built-in function net.Listener>",
 		},
 		{
-			input: "net.Listener(network = 'tcp', address='localhost:1301')",
-			want:  "<net.Listener tcp 127.0.0.1:1301>",
+			Expr: "net.Listener(network = 'tcp', address='localhost:1301')",
+			Want: "<net.Listener tcp 127.0.0.1:1301>",
 		},
 		{
-			input: "net.Listener().network",
-			want:  `"tcp"`,
+			Expr: "net.Listener().network",
+			Want: `"tcp"`,
 		},
 		{
-			input: "net.Listener(address='localhost:1300').address",
-			want:  `"127.0.0.1:1300"`,
+			Expr: "net.Listener(address='localhost:1300').address",
+			Want: `"127.0.0.1:1300"`,
 		},
 		{
-			input: "net.Listener(address=':1302')",
-			want:  "<net.Listener tcp [::]:1302>",
+			Expr: "net.Listener(address=':1302')",
+			Want: "<net.Listener tcp [::]:1302>",
 		},
 		{
-			input: "net.Listener(address=':1303')",
-			want:  "<net.Listener tcp [::]:1303>",
+			Expr: "net.Listener(address=':1303')",
+			Want: "<net.Listener tcp [::]:1303>",
 		},
-	}
-
-	for _, tc := range testCases {
-		value, err := starlark.Eval(
-			new(starlark.Thread),
-			"<expr>",
-			tc.input,
-			starlark.StringDict{
-				"net": Module,
-			},
-		)
-		if err != nil {
-			if tc.wantErr == "" {
-				t.Fatal("unexpected error: ", err)
-			}
-			gotErr := err.Error()
-			if diff := cmp.Diff(tc.wantErr, gotErr); diff != "" {
-				t.Fatalf("(-want +got):\n%s", diff)
-			}
-			return
-		}
-
-		got := value.String()
-
-		if diff := cmp.Diff(tc.want, got); diff != "" {
-			t.Errorf("(-want +got):\n%s", diff)
-		}
-	}
+	})
 }

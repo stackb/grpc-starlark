@@ -19,7 +19,7 @@ go_test(
     srcs = ["module_test.go"],
     embed = [":starlarknet"],
     deps = [
-        "@com_github_google_go_cmp//cmp",
+        "//pkg/moduletest",
         "@net_starlark_go//starlark",
     ],
 )
