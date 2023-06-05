@@ -38,12 +38,12 @@ func newClientStream(stream grpc.ClientStream, md protoreflect.MethodDescriptor)
 					if err != nil {
 						return nil, err
 					}
-					return newMetadata(md), nil
+					return makeMetadata(md), nil
 
 				}),
 				"trailer": starlark.NewBuiltin(string(clientStreamSymbol)+".trailer", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 					md := stream.Trailer()
-					return newMetadata(md), nil
+					return makeMetadata(md), nil
 				}),
 				"recv": starlark.NewBuiltin(string(clientStreamSymbol)+".recv", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 					msg := dynamicpb.NewMessage(md.Output())

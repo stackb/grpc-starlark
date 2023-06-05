@@ -64,7 +64,6 @@ func (c *grpcServer) start(thread *starlark.Thread, fn *starlark.Builtin, args s
 	if err := starlark.UnpackPositionalArgs(fn.Name(), args, kwargs, 1, &listener); err != nil {
 		return nil, err
 	}
-	log.Printf("grpc.Server listening on %v", listener.Addr())
 	if err := c.server.Serve(listener); err != nil {
 		log.Fatalln("grpc.Server error:", err)
 	}

@@ -6,6 +6,7 @@ go_library(
     importpath = "github.com/stackb/grpc-starlark/pkg/starlarkthread",
     visibility = ["//visibility:public"],
     deps = [
+        "@net_starlark_go//lib/time",
         "@net_starlark_go//starlark",
         "@net_starlark_go//starlarkstruct",
     ],

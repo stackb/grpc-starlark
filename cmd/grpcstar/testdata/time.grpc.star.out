@@ -1,0 +1,5 @@
+=== Example Time Usage ===
+current time: 2019-01-01 00:00:00.7 +0000 UTC
+time add: 2019-01-01 00:00:05.7 +0000 UTC
+time hours: 0
+additional details: https://github.com/google/starlark-go/blob/a134d8f9ddca7469c736775b67544671f0a135ad/starlark/testdata/time.star

@@ -76,8 +76,6 @@ go_test(
     embed = [":grpcstar_lib"],
     deps = [
         "@com_github_google_go_cmp//cmp",
-        # "@net_starlark_go//lib/proto",
-        # "@net_starlark_go//starlark",
-        # "@org_golang_google_protobuf//reflect/protoregistry",
+        "@net_starlark_go//lib/time",
     ],
 )

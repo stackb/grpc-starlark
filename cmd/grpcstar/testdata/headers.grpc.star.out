@@ -1,0 +1,5 @@
+keys: [":authority", "authorization", "content-type", "user-agent"]
+:authority: 127.0.0.1:56676
+content-type: application/grpc
+user-agent: grpc-go/1.35.0
+authorization: bearer foo

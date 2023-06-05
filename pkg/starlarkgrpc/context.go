@@ -40,7 +40,7 @@ func newCtx(x context.Context) *ctx {
 			starlark.StringDict{
 				"metadata": starlark.NewBuiltin(string(contextSymbol)+".metadata", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 					if md, ok := metadata.FromIncomingContext(x); ok {
-						return newMetadata(md), nil
+						return makeMetadata(md), nil
 					} else {
 						return nil, nil
 					}

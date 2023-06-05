@@ -6,10 +6,11 @@ server:
 
 
 .PHONY: serve
-serve:
+serve: server
+	GODEBUG=http2debug=2 \
 	bazel-bin/cmd/grpcstar/grpcstar_/grpcstar \
 		-protoset=bazel-bin/example/routeguide/routeguide_proto_descriptor.pb \
-		pkg/program/routeguide.grpc.star
+		cmd/grpcstar/testdata/headers.grpc.star
 
 .PHONY: routeguide_proto_descriptor
 routeguide_proto_descriptor:
@@ -22,4 +23,4 @@ mocks:
 	mockery --srcpkg=google.golang.org/grpc --name=ClientStream
 
 update_goldens:
-	bazel run //cmd/grpcstar:grpcstar_test -- --update
+	bazel run //cmd/grpcstar:grpcstar_test --action_env='GODEBUG=http2debug=1' -- --update

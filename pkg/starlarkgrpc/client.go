@@ -8,6 +8,7 @@ import (
 	"github.com/stripe/skycfg/go/protomodule"
 	"go.starlark.net/starlark"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/reflect/protoregistry"
 	"google.golang.org/protobuf/types/dynamicpb"
@@ -102,11 +103,13 @@ func newGrpcClient(files *protoregistry.Files) func(thread *starlark.Thread, _ *
 	}
 }
 
-func newClientUnaryCall(method string, md protoreflect.MethodDescriptor, conn *grpc.ClientConn) func(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+func newClientUnaryCall(method string, methodDescriptor protoreflect.MethodDescriptor, conn *grpc.ClientConn) func(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	return func(thread *starlark.Thread, b *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 		var in starlark.Value
-		if err := starlark.UnpackArgs(string(md.Name()), args, kwargs,
+		var meta md
+		if err := starlark.UnpackArgs(string(methodDescriptor.Name()), args, kwargs,
 			"request", &in,
+			"metadata?", &meta,
 		); err != nil {
 			return nil, err
 		}
@@ -116,10 +119,18 @@ func newClientUnaryCall(method string, md protoreflect.MethodDescriptor, conn *g
 			return nil, fmt.Errorf("failed to convert request argument to proto.Message: %v", in)
 		}
 
-		response := dynamicpb.NewMessage(md.Output())
-
 		ctx := context.Background()
-		if err := conn.Invoke(ctx, method, request, response); err != nil {
+
+		var callOptions []grpc.CallOption
+		if meta != nil {
+			md := metadata.MD(meta)
+			callOptions = append(callOptions, grpc.Header(&md))
+			// panic(fmt.Sprintf("added headers: %v", md))
+			ctx = metadata.NewOutgoingContext(ctx, md)
+		}
+
+		response := dynamicpb.NewMessage(methodDescriptor.Output())
+		if err := conn.Invoke(ctx, method, request, response, callOptions...); err != nil {
 			return nil, err
 		}
 

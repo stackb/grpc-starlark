@@ -6,6 +6,7 @@ import (
 
 	"github.com/stripe/skycfg/go/protomodule"
 	libproto "go.starlark.net/lib/proto"
+	libtime "go.starlark.net/lib/time"
 	"go.starlark.net/starlark"
 	"go.starlark.net/starlarkstruct"
 	"google.golang.org/protobuf/reflect/protoreflect"
@@ -64,6 +65,7 @@ func newPredeclared(files *protoregistry.Files) starlark.StringDict {
 		"os":     starlarkos.Module,
 		"net":    starlarknet.Module,
 		"thread": starlarkthread.Module,
+		"time":   libtime.Module,
 		"grpc":   starlarkgrpc.NewModule(files),
 		"proto":  protomodule.NewModule(fileRegistryTypes(files)),
 		"struct": starlark.NewBuiltin("struct", starlarkstruct.Make),

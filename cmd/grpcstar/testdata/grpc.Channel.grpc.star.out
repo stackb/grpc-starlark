@@ -1,0 +1,3 @@
+grpc.Channel: <built-in function grpc.Channel>
+dir(grpc.Channel): []
+channel: grpc.Channel<localhost:9654, IDLE>

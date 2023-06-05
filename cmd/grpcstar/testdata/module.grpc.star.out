@@ -1,0 +1,3 @@
+=== Example Module Usage ===
+<module "console">
+console.log!

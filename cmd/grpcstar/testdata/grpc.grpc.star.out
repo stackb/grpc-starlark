@@ -1,0 +1,2 @@
+grpc: <module "grpc">
+dir(grpc): ["Channel", "Client", "Error", "Metadata", "Server", "status"]

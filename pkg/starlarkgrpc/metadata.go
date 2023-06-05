@@ -1,32 +1,69 @@
 package starlarkgrpc
 
 import (
+	"fmt"
+	"sort"
+
 	"go.starlark.net/starlark"
-	"go.starlark.net/starlarkstruct"
 	"google.golang.org/grpc/metadata"
 )
 
-var metadataSymbol = Symbol("Metadata")
+type md metadata.MD
 
-type md struct {
-	*starlarkstruct.Struct
-	md metadata.MD
+func newMetadata(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+	return makeMetadata(metadata.New(map[string]string{})), nil
 }
 
-func newMetadata(meta metadata.MD) *md {
-	return &md{
-		md: meta,
-		Struct: starlarkstruct.FromStringDict(
-			metadataSymbol,
-			starlark.StringDict{},
-		),
+func makeMetadata(meta metadata.MD) md {
+	return md(meta)
+}
+
+// String implements the Stringer interface.
+func (d md) String() string { return fmt.Sprintf("md<%v>", d.AttrNames()) }
+
+// Type returns a short string describing the value's type.
+func (d md) Type() string { return "metadata.MD" }
+
+// Freeze renders *md immutable. required by starlark.Value interface
+// because duration is already immutable this is a no-op.
+func (d md) Freeze() {}
+
+// Hash returns a function of x such that Equals(x, y) => Hash(x) == Hash(y)
+// required by starlark.Value interface.
+func (d md) Hash() (uint32, error) {
+	return 0, fmt.Errorf("unhashable: %s", d.Type())
+}
+
+// Truth reports whether the duration is non-zero.
+func (d md) Truth() starlark.Bool { return starlark.True }
+
+// AttrNames lists available dot expression strings. required by
+// starlark.HasAttrs interface.
+func (d md) AttrNames() (names []string) {
+	for k := range d {
+		names = append(names, k)
 	}
+	sort.Strings(names)
+	return
+}
+
+// Attr gets a value for a string attribute, implementing dot expression support
+// in starklark. required by starlark.HasAttrs interface.
+func (d md) Attr(name string) (starlark.Value, error) {
+	if vals, ok := d[name]; ok {
+		if len(vals) == 1 {
+			return starlark.String(vals[0]), nil
+		}
+		return goStringSliceToStarlarkList(vals), nil
+
+	}
+	return nil, fmt.Errorf("unrecognized %s attribute %q", d.Type(), name)
 }
 
 // Get implements part of the starlark.Mapping interface.
-func (md *md) Get(k starlark.Value) (v starlark.Value, found bool, err error) {
+func (d md) Get(k starlark.Value) (v starlark.Value, found bool, err error) {
 	key := k.String()
-	if vals, ok := md.md[key]; ok {
+	if vals, ok := d[key]; ok {
 		if len(vals) == 1 {
 			return starlark.String(vals[0]), true, nil
 		}
@@ -36,8 +73,24 @@ func (md *md) Get(k starlark.Value) (v starlark.Value, found bool, err error) {
 }
 
 // SetKey implements part of the starlark.HasSetKey interface.
-func (md *md) SetKey(k, v starlark.Value) (err error) {
-	key := k.String()
-	md.md.Set(key, v.String())
+func (d md) SetKey(k, v starlark.Value) (err error) {
+	var key, val string
+
+	switch t := k.(type) {
+	case starlark.String:
+		key = t.GoString()
+	default:
+		key = v.String()
+	}
+
+	switch t := v.(type) {
+	case starlark.String:
+		val = t.GoString()
+	default:
+		val = v.String()
+	}
+
+	d[key] = []string{val}
+
 	return nil
 }
