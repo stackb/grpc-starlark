@@ -49,11 +49,11 @@ jobs:
           # Bazelisk will download bazel to here
           RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
         run: >-
-          cp bazel-bin/cmd/grpcstar/grpc-starlark_darwin_amd64.zip grpc-starlark_darwin_amd64.${{ env.RELEASE_VERSION }}.zip &&
-          cp bazel-bin/cmd/grpcstar/grpc-starlark_darwin_arm64.zip grpc-starlark_darwin_arm64.${{ env.RELEASE_VERSION }}.zip &&
-          cp bazel-bin/cmd/grpcstar/grpc-starlark_linux_amd64.zip grpc-starlark_linux_amd64.${{ env.RELEASE_VERSION }}.zip &&
-          cp bazel-bin/cmd/grpcstar/grpc-starlark_linux_arm64.zip grpc-starlark_linux_arm64.${{ env.RELEASE_VERSION }}.zip &&
-          cp bazel-bin/cmd/grpcstar/grpc-starlark_windows_amd64.zip grpc-starlark_windows_amd64.${{ env.RELEASE_VERSION }}.zip &&
+          cp bazel-bin/cmd/grpcstar/grpcstar_darwin_amd64.zip grpcstar_darwin_amd64.${{ env.RELEASE_VERSION }}.zip &&
+          cp bazel-bin/cmd/grpcstar/grpcstar_darwin_arm64.zip grpcstar_darwin_arm64.${{ env.RELEASE_VERSION }}.zip &&
+          cp bazel-bin/cmd/grpcstar/grpcstar_linux_amd64.zip grpcstar_linux_amd64.${{ env.RELEASE_VERSION }}.zip &&
+          cp bazel-bin/cmd/grpcstar/grpcstar_linux_arm64.zip grpcstar_linux_arm64.${{ env.RELEASE_VERSION }}.zip &&
+          cp bazel-bin/cmd/grpcstar/grpcstar_windows_amd64.zip grpcstar_windows_amd64.${{ env.RELEASE_VERSION }}.zip &&
           echo "done"
 
       - name: Release
@@ -62,8 +62,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            grpc-starlark_darwin_amd64.${{ env.RELEASE_VERSION }}.zip
-            grpc-starlark_darwin_arm64.${{ env.RELEASE_VERSION }}.zip
-            grpc-starlark_linux_amd64.${{ env.RELEASE_VERSION }}.zip
-            grpc-starlark_linux_arm64.${{ env.RELEASE_VERSION }}.zip
-            grpc-starlark_windows_amd64.${{ env.RELEASE_VERSION }}.zip
+            grpcstar_darwin_amd64.${{ env.RELEASE_VERSION }}.zip
+            grpcstar_darwin_arm64.${{ env.RELEASE_VERSION }}.zip
+            grpcstar_linux_amd64.${{ env.RELEASE_VERSION }}.zip
+            grpcstar_linux_arm64.${{ env.RELEASE_VERSION }}.zip
+            grpcstar_windows_amd64.${{ env.RELEASE_VERSION }}.zip
