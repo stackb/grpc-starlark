@@ -6,7 +6,6 @@ go_library(
     srcs = [
         "execfiletest.go",
         "exprtest.go",
-        "files.go",
     ],
     importpath = "github.com/stackb/grpc-starlark/pkg/moduletest",
     visibility = ["//visibility:public"],

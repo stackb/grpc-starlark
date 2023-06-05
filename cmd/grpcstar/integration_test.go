@@ -14,7 +14,7 @@ import (
 
 var update = flag.Bool("update", false, "update golden files")
 
-func NoTestHelp(t *testing.T) {
+func TestHelp(t *testing.T) {
 	for _, args := range [][]string{
 		{"help"},
 		{"run", "-h"},
