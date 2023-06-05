@@ -10,6 +10,42 @@ import (
 
 type md metadata.MD
 
+func metadataFromValue(v starlark.Value) (md, bool) {
+	if meta, ok := v.(md); ok {
+		return meta, true
+	}
+	if dict, ok := v.(*starlark.Dict); ok {
+		return metadataFromDict(dict), true
+	}
+	return nil, false
+}
+
+func metadataFromDict(dict *starlark.Dict) md {
+	meta := metadata.Pairs()
+	for _, k := range dict.Keys() {
+
+		var key string
+		switch t := k.(type) {
+		case starlark.String:
+			key = t.GoString()
+		default:
+			key = t.String()
+		}
+
+		v, _, _ := dict.Get(k)
+		var val string
+		switch t := v.(type) {
+		case starlark.String:
+			val = t.GoString()
+		default:
+			val = t.String()
+		}
+
+		meta[key] = []string{val}
+	}
+	return md(meta)
+}
+
 func newMetadata(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	return makeMetadata(metadata.New(map[string]string{})), nil
 }

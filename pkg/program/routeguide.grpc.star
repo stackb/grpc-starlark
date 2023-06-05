@@ -4,7 +4,7 @@ Used in testing.
 
 The client test functions have scope access to the client and server.
 Typical usage is to invoke the script, start the server in a separate thread via
-thread.timeout, wait for client return values, and stop the server upon success.
+thread.defer, wait for client return values, and stop the server upon success.
 
 """
 pb = proto.package("example.routeguide")
@@ -83,7 +83,7 @@ server.register("example.routeguide.RouteGuide", {
 
 channel = grpc.Channel(listener.address)
 client = grpc.Client("example.routeguide.RouteGuide", channel)
-thread.timeout(lambda: server.start(listener))
+thread.defer(lambda: server.start(listener))
 
 # === [Client Call Functions] ================================================
 

@@ -18,6 +18,7 @@ go_test(
     embed = [":starlarkthread"],
     deps = [
         "//pkg/moduletest",
+        "@net_starlark_go//lib/time",
         "@net_starlark_go//starlark",
     ],
 )

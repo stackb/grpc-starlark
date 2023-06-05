@@ -5,12 +5,14 @@ import (
 	"time"
 
 	"github.com/stackb/grpc-starlark/pkg/moduletest"
+	libtime "go.starlark.net/lib/time"
 	"go.starlark.net/starlark"
 )
 
 func TestThreadModule(t *testing.T) {
 	moduletest.ExprTests(t, starlark.StringDict{
 		"thread": Module,
+		"time":   libtime.Module,
 	}, []*moduletest.ExprTest{
 		// thread.sleep
 		{
@@ -19,26 +21,26 @@ func TestThreadModule(t *testing.T) {
 		},
 		{
 			Expr:    "thread.sleep()",
-			WantErr: "thread.sleep: missing argument for millis",
+			WantErr: "thread.sleep: missing argument for duration",
 		},
 		{
-			Expr: "thread.sleep(-1)",
+			Expr: "thread.sleep(time.millisecond * -1)",
 			Want: "None",
 		},
 		{
-			Expr: "thread.sleep(0)",
+			Expr: "thread.sleep(time.millisecond * 0)",
 			Want: "None",
 		},
 		{
-			Expr: "thread.sleep(millis = 0)",
+			Expr: "thread.sleep(time.millisecond * 0)",
 			Want: "None",
 		},
 		{
 			Expr:    "thread.sleep('foo')",
-			WantErr: "thread.sleep: for parameter millis: got string, want int",
+			WantErr: `thread.sleep: for parameter duration: time: invalid duration "foo"`,
 		},
 		{
-			Expr:        "thread.sleep(1000)",
+			Expr:        "thread.sleep(1000 * time.millisecond)",
 			WantElapsed: time.Millisecond * 1000,
 			Want:        "None",
 		},
@@ -55,46 +57,28 @@ func TestThreadModule(t *testing.T) {
 			Expr:    "thread.cancel(reason = 'testing')",
 			WantErr: "Starlark computation cancelled: testing",
 		},
-		// thread.timeout
+		// thread.defer
 		{
-			Expr: "thread.timeout",
-			Want: "<built-in function thread.timeout>",
+			Expr: "thread.defer",
+			Want: "<built-in function thread.defer>",
 		},
 		{
-			Expr: "thread.timeout(lambda: print('ok'))",
-			Want: "<built-in function thread.timeout.cancel>",
+			Expr: "thread.defer(lambda: print('ok'))",
+			Want: "<built-in function thread.defer.cancel>",
 		},
 		{
-			Expr:        "thread.timeout(lambda: print('ok')) and thread.sleep(100)",
+			Expr:        "thread.defer(lambda: print('ok')) and thread.sleep(time.millisecond * 100)",
 			WantPrinted: "ok",
 			Want:        "None",
 		},
 		{
-			Expr: "thread.timeout(lambda: print('never'))()",
+			Expr: "thread.defer(lambda: print('never'))()",
 			Want: "None",
 		},
 		{
-			Expr:        "thread.timeout(fn = lambda: print('ok'), millis = 100) and thread.sleep(200)",
+			Expr:        "thread.defer(fn = lambda: print('ok'), delay = time.millisecond * 100) and thread.sleep(time.millisecond * 200)",
 			WantPrinted: "ok",
 			Want:        "None",
-		},
-		// thread.interval
-		{
-			Expr: "thread.interval",
-			Want: "<built-in function thread.interval>",
-		},
-		{
-			Expr: "thread.interval(lambda: print('ok'))",
-			Want: "<built-in function thread.interval.cancel>",
-		},
-		{
-			Expr:        "thread.interval(lambda: print('ok'), millis = 40) and thread.sleep(100)",
-			WantPrinted: "ok\nok",
-			Want:        "None",
-		},
-		{
-			Expr: "thread.interval(lambda: print('never'))()",
-			Want: "None",
 		},
 	})
 }

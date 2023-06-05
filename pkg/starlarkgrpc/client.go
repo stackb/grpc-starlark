@@ -106,10 +106,10 @@ func newGrpcClient(files *protoregistry.Files) func(thread *starlark.Thread, _ *
 func newClientUnaryCall(method string, methodDescriptor protoreflect.MethodDescriptor, conn *grpc.ClientConn) func(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	return func(thread *starlark.Thread, b *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 		var in starlark.Value
-		var meta md
+		var metadataValue starlark.Value
 		if err := starlark.UnpackArgs(string(methodDescriptor.Name()), args, kwargs,
 			"request", &in,
-			"metadata?", &meta,
+			"metadata?", &metadataValue,
 		); err != nil {
 			return nil, err
 		}
@@ -123,9 +123,8 @@ func newClientUnaryCall(method string, methodDescriptor protoreflect.MethodDescr
 
 		var callOptions []grpc.CallOption
 
-		if meta != nil {
-			md := metadata.MD(meta)
-			ctx = metadata.NewOutgoingContext(ctx, md)
+		if md, ok := metadataFromValue(metadataValue); ok {
+			ctx = metadata.NewOutgoingContext(ctx, metadata.MD(md))
 		}
 
 		response := dynamicpb.NewMessage(methodDescriptor.Output())
@@ -145,6 +144,16 @@ func newClientUnaryCall(method string, methodDescriptor protoreflect.MethodDescr
 func newClientStreamingCall(method string, md protoreflect.MethodDescriptor, conn *grpc.ClientConn) func(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	return func(thread *starlark.Thread, b *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 		ctx := context.Background()
+
+		var metadataValue starlark.Value
+		if err := starlark.UnpackArgs(string(md.Name()), args, kwargs,
+			"metadata?", &metadataValue,
+		); err != nil {
+			return nil, err
+		}
+		if md, ok := metadataFromValue(metadataValue); ok {
+			ctx = metadata.NewOutgoingContext(ctx, metadata.MD(md))
+		}
 
 		clientStream, err := conn.NewStream(ctx, &grpc.StreamDesc{
 			StreamName:    string(md.Name()),
