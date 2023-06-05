@@ -2,12 +2,13 @@
 
 # grpc-starlark
 
-`grpc-starlark` is a gRPC server that uses the starlark language to provide
-handler method implementations.
+`grpc-starlark` is a library for embedding a gRPC-capable starlark interpreter
+and a standalone binary `grpcstar` that executes starlark scripts.
 
 ## Installation
 
-Download a binary from the releases page, or install from source:
+Download a binary from the [releases
+page](https://github.com/stackb/grpc-starlark/releases), or install from source:
 
 ```sh
 go install github.com/stackb/grpc-starlark/cmd/grpcstar@latest
