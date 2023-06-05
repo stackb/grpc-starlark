@@ -6,6 +6,7 @@ go_library(
     importpath = "github.com/stackb/grpc-starlark/pkg/starlarkthread",
     visibility = ["//visibility:public"],
     deps = [
+        "@net_starlark_go//lib/time",
         "@net_starlark_go//starlark",
         "@net_starlark_go//starlarkstruct",
     ],
@@ -16,7 +17,8 @@ go_test(
     srcs = ["module_test.go"],
     embed = [":starlarkthread"],
     deps = [
-        "@com_github_google_go_cmp//cmp",
+        "//pkg/moduletest",
+        "@net_starlark_go//lib/time",
         "@net_starlark_go//starlark",
     ],
 )

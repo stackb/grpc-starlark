@@ -2,9 +2,11 @@ package program
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/stripe/skycfg/go/protomodule"
 	libproto "go.starlark.net/lib/proto"
+	libtime "go.starlark.net/lib/time"
 	"go.starlark.net/starlark"
 	"go.starlark.net/starlarkstruct"
 	"google.golang.org/protobuf/reflect/protoreflect"
@@ -29,7 +31,7 @@ func NewProgram(files *protoregistry.Files) *Program {
 		Files:       files,
 		Predeclared: newPredeclared(files),
 		Reporter: func(msg string) {
-			fmt.Println("grpc-starlark> ", msg)
+			log.Println(msg)
 		},
 		ErrorReporter: func(err error) {
 			fmt.Println("grpc-starlark error> ", err.Error())
@@ -63,9 +65,11 @@ func newPredeclared(files *protoregistry.Files) starlark.StringDict {
 		"os":     starlarkos.Module,
 		"net":    starlarknet.Module,
 		"thread": starlarkthread.Module,
+		"time":   libtime.Module,
 		"grpc":   starlarkgrpc.NewModule(files),
 		"proto":  protomodule.NewModule(fileRegistryTypes(files)),
 		"struct": starlark.NewBuiltin("struct", starlarkstruct.Make),
+		"module": starlark.NewBuiltin("module", starlarkstruct.MakeModule),
 	}
 }
 

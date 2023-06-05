@@ -71,13 +71,19 @@ func newServerStream(stream grpc.ServerStream, descriptor protoreflect.MethodDes
 
 func applyHeaderFunc(apply func(md metadata.MD) error) func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	return func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-		var md *md
+		var metadataValue starlark.Value
 		if err := starlark.UnpackArgs(fn.Name(), args, kwargs,
-			"metadata", &md,
+			"metadata", &metadataValue,
 		); err != nil {
 			return nil, err
 		}
-		if err := apply(md.md); err != nil {
+		var md metadata.MD
+		if metadataValue != nil {
+			if v, ok := metadataFromValue(metadataValue); ok {
+				md = metadata.MD(v)
+			}
+		}
+		if err := apply(md); err != nil {
 			return nil, err
 		}
 		return starlark.None, nil
@@ -86,13 +92,19 @@ func applyHeaderFunc(apply func(md metadata.MD) error) func(thread *starlark.Thr
 
 func setTrailerFunc(apply func(md metadata.MD)) func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	return func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-		var md *md
+		var metadataValue starlark.Value
 		if err := starlark.UnpackArgs(fn.Name(), args, kwargs,
-			"metadata", &md,
+			"metadata", &metadataValue,
 		); err != nil {
 			return nil, err
 		}
-		apply(md.md)
+		var md metadata.MD
+		if metadataValue != nil {
+			if v, ok := metadataFromValue(metadataValue); ok {
+				md = metadata.MD(v)
+			}
+		}
+		apply(metadata.MD(md))
 		return starlark.None, nil
 	}
 }

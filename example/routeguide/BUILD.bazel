@@ -8,5 +8,6 @@ proto_library(
 
 proto_descriptor_set(
     name = "routeguide_proto_descriptor",
+    visibility = ["//visibility:public"],
     deps = ["routeguide_proto"],
 )

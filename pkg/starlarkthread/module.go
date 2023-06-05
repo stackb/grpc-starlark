@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	libtime "go.starlark.net/lib/time"
 	"go.starlark.net/starlark"
 	"go.starlark.net/starlarkstruct"
 )
@@ -15,22 +16,21 @@ import (
 var Module = &starlarkstruct.Module{
 	Name: "thread",
 	Members: starlark.StringDict{
-		"sleep":    starlark.NewBuiltin("thread.sleep", sleep),
-		"cancel":   starlark.NewBuiltin("thread.cancel", cancel),
-		"timeout":  starlark.NewBuiltin("thread.timeout", timeout),
-		"interval": starlark.NewBuiltin("thread.interval", interval),
-		"name":     starlark.NewBuiltin("thread.name", name),
+		"sleep":  starlark.NewBuiltin("thread.sleep", sleep),
+		"cancel": starlark.NewBuiltin("thread.cancel", cancel),
+		"defer":  starlark.NewBuiltin("thread.defer", deferFunc),
+		"name":   starlark.NewBuiltin("thread.name", name),
 	},
 }
 
 func sleep(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-	var millis int64
+	var duration libtime.Duration
 	if err := starlark.UnpackArgs("thread.sleep", args, kwargs,
-		"millis", &millis,
+		"duration", &duration,
 	); err != nil {
 		return nil, err
 	}
-	time.Sleep(time.Millisecond * time.Duration(millis))
+	time.Sleep(time.Duration(duration))
 	return starlark.None, nil
 }
 
@@ -45,12 +45,14 @@ func cancel(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, k
 	return starlark.None, nil
 }
 
-func timeout(thread *starlark.Thread, b *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-	var millis int64
+func deferFunc(thread *starlark.Thread, b *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+	var duration libtime.Duration
+	var count int64 = 1
 	var fn starlark.Callable
-	if err := starlark.UnpackArgs("thread.timeout", args, kwargs,
+	if err := starlark.UnpackArgs("thread.defer", args, kwargs,
 		"fn", &fn,
-		"millis?", &millis,
+		"delay?", &duration,
+		"count?", &count,
 	); err != nil {
 		return nil, err
 	}
@@ -58,50 +60,24 @@ func timeout(thread *starlark.Thread, b *starlark.Builtin, args starlark.Tuple, 
 	var cancelled bool
 
 	go func() {
-		time.Sleep(time.Millisecond * time.Duration(millis))
-		if cancelled {
-			return
-		}
-		thread2 := newThread(thread, fmt.Sprintf("thread.timeout(%d)", millis))
-		_, err := starlark.Call(thread2, fn, starlark.Tuple{}, []starlark.Tuple{})
-		if err != nil && !cancelled {
-			thread2.Cancel(fmt.Sprintf("error invoking %s callback function: %v", b.Name(), err))
-		}
-	}()
-
-	return starlark.NewBuiltin("thread.timeout.cancel", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-		cancelled = true
-		return starlark.None, nil
-	}), nil
-}
-
-func interval(thread *starlark.Thread, b *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-	var millis int64
-	var fn starlark.Callable
-	if err := starlark.UnpackArgs("thread.interval", args, kwargs,
-		"fn", &fn,
-		"millis?", &millis,
-	); err != nil {
-		return nil, err
-	}
-
-	var cancelled bool
-
-	go func() {
-		for {
-			time.Sleep(time.Millisecond * time.Duration(millis))
+		for count > 0 {
 			if cancelled {
 				return
 			}
-			thread2 := newThread(thread, fmt.Sprintf("thread.interval(%d)", millis))
+			time.Sleep(time.Duration(duration))
+			if cancelled {
+				return
+			}
+			thread2 := newThread(thread, fmt.Sprintf("thread.defer(%d)", duration))
 			_, err := starlark.Call(thread2, fn, starlark.Tuple{}, []starlark.Tuple{})
 			if err != nil && !cancelled {
 				thread2.Cancel(fmt.Sprintf("error invoking %s callback function: %v", b.Name(), err))
 			}
+			count--
 		}
 	}()
 
-	return starlark.NewBuiltin("thread.interval.cancel", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+	return starlark.NewBuiltin("thread.defer.cancel", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 		cancelled = true
 		return starlark.None, nil
 	}), nil
