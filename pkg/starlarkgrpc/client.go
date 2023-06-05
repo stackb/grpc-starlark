@@ -122,10 +122,9 @@ func newClientUnaryCall(method string, methodDescriptor protoreflect.MethodDescr
 		ctx := context.Background()
 
 		var callOptions []grpc.CallOption
+
 		if meta != nil {
 			md := metadata.MD(meta)
-			callOptions = append(callOptions, grpc.Header(&md))
-			// panic(fmt.Sprintf("added headers: %v", md))
 			ctx = metadata.NewOutgoingContext(ctx, md)
 		}
 

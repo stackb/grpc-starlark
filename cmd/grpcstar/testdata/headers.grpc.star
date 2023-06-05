@@ -17,7 +17,6 @@ def get_feature(stream, point):
     """
     md = stream.ctx.metadata()
     print("keys:", dir(md))
-    print(":authority:", getattr(md, ":authority", "NOT SET"))
     print("content-type:", getattr(md, "content-type", "NOT SET"))
     print("user-agent:", getattr(md, "user-agent", "NOT SET"))
     print("authorization:", getattr(md, "authorization", "NOT SET"))
