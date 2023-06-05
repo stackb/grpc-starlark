@@ -42,11 +42,12 @@ can be used to generate this file.
 
 ### Script
 
-The the script file is executed by the embedded starlark interpreter.  In this
-file you can implement grpc servers and/or clients.  Given this implementation
-sits on top of `grpc-go`, the API is very similar.
+The script file is executed by the embedded starlark interpreter.  In this file
+you can create and run grpc servers and grpc clients.  
 
 ## API
+
+`grpc-starlark` is implemented using go and has an API similar to `grpc-go`.
 
 ### Protobuf
 
