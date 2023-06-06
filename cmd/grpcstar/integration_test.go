@@ -117,6 +117,8 @@ func TestGoldens(t *testing.T) {
 					t.Errorf("stdout (-want +got):\n%s", diff)
 				}
 				if diff := cmp.Diff(string(wantErr), string(gotErr)); diff != "" {
+					t.Log("want stderr:\n", string(wantErr))
+					t.Log("got stderr:\n", string(gotErr))
 					t.Errorf("stderr (-want +got):\n%s", diff)
 				}
 			}
