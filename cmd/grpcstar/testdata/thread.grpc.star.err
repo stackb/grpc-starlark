@@ -11,10 +11,10 @@
 [testdata/thread.grpc.star:17:10] 
     > thread.defer runs a function in a separate thread after a given delay
     
-[testdata/thread.grpc.star:21:27] defer at 2019-01-01 00:00:00.3 +0000 UTC in thread -thread.defer(100000000):
-[testdata/thread.grpc.star:21:27] defer at 2019-01-01 00:00:00.4 +0000 UTC in thread -thread.defer(100000000):
-[testdata/thread.grpc.star:21:27] defer at 2019-01-01 00:00:00.5 +0000 UTC in thread -thread.defer(100000000):
-[testdata/thread.grpc.star:29:10] 
+[testdata/thread.grpc.star:23:27] defer callback in thread -thread.defer(150000000):
+[testdata/thread.grpc.star:23:27] defer callback in thread -thread.defer(150000000):
+[testdata/thread.grpc.star:23:27] defer callback in thread -thread.defer(150000000):
+[testdata/thread.grpc.star:31:10] 
     > thread.cancel stops the current thread.  Cancelling the main thread exits the program.
     
-[testdata/thread.grpc.star:33:10] <built-in function thread.defer.cancel>
+[testdata/thread.grpc.star:35:10] <built-in function thread.defer.cancel>

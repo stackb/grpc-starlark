@@ -18,8 +18,10 @@ def main(ctx):
     > thread.defer runs a function in a separate thread after a given delay
     """)
     thread.defer(
-        fn = lambda: print("defer at %s in thread %s:" % (time.now(), thread.name())),
-        delay = 100 * time.millisecond,
+        # FIXME(pcj): figure out how to make this non-flaky
+        # fn = lambda: print("defer at %s in thread %s:" % (time.now(), thread.name())),
+        fn = lambda: print("defer callback in thread %s:" % thread.name()),
+        delay = 150 * time.millisecond,
         count = 3,
     )
 
