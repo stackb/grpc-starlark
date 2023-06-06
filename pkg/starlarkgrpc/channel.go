@@ -6,6 +6,7 @@ import (
 
 	"go.starlark.net/starlark"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	// "google.golang.org/grpc/credentials/insecure"
 )
 
@@ -41,6 +42,7 @@ func newChannel(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tupl
 		unaryInterceptor  starlark.Callable
 		streamInterceptor starlark.Callable
 		perRpcCredentials starlark.Callable
+		credentials       credentials.TransportCredentials
 	)
 	writeBufferSize := math.MinInt
 	readBufferSize := math.MinInt
@@ -58,6 +60,7 @@ func newChannel(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tupl
 		"unary_interceptor?", &unaryInterceptor,
 		"stream_interceptor?", &streamInterceptor,
 		"per_rpc_credentials?", &perRpcCredentials,
+		"credentials?", &credentials,
 	); err != nil {
 		return nil, err
 	}
@@ -89,9 +92,9 @@ func newChannel(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tupl
 	if perRpcCredentials != nil {
 		options = append(options, grpc.WithPerRPCCredentials(newPerRpcCredentials(thread, perRpcCredentials)))
 	}
-
-	if len(options) == 0 {
-		// options = append(options, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if credentials != nil {
+		options = append(options, grpc.WithTransportCredentials(credentials))
+	} else {
 		options = append(options, grpc.WithInsecure())
 	}
 	conn, err := grpc.Dial(target, options...)

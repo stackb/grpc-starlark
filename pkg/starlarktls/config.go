@@ -16,7 +16,7 @@ type Config struct {
 
 func newConfig(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	var certificates *starlark.List
-	var clientAuth tls.ClientAuthType
+	var clientAuth int
 
 	if err := starlark.UnpackArgs(fn.Name(), args, kwargs,
 		"certificates?", &certificates,
@@ -38,7 +38,7 @@ func newConfig(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tupl
 	return Config{
 		Config: &tls.Config{
 			Certificates: certs,
-			ClientAuth:   clientAuth,
+			ClientAuth:   tls.ClientAuthType(clientAuth),
 		},
 		Struct: starlarkstruct.FromStringDict(
 			starlarkutil.Symbol("tls.Config"),

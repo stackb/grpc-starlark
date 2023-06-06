@@ -66,6 +66,7 @@ print("certificate:", certificate)
 
 config = tls.Config(
     certificates = [certificate],
+    client_auth = tls.ClientAuthType.NONE,
 )
 print("config:", config)
 
@@ -95,7 +96,7 @@ server.register(service_name, {
 })
 thread.defer(lambda: server.start(listener))
 
-channel = grpc.Channel(listener.address)
+channel = grpc.Channel(listener.address, credentials = creds)
 client = grpc.Client(service_name, channel)
 
 def call_get_feature():
