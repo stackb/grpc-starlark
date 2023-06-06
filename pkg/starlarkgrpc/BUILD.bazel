@@ -50,7 +50,6 @@ go_test(
     name = "starlarkgrpc_test",
     srcs = [
         "channel_test.go",
-        "client_stream_test.go",
         "client_test.go",
         "error_test.go",
         "module_test.go",
@@ -60,12 +59,10 @@ go_test(
     embed = [":starlarkgrpc"],
     embedsrcs = ["routeguide_proto_descriptor.pb"],
     deps = [
-        "//mocks",
         "//pkg/moduletest",
         "//pkg/protodescriptorset",
         "//pkg/starlarknet",
         "//pkg/starlarkthread",
-        "@com_github_google_go_cmp//cmp",
         "@net_starlark_go//starlark",
         "@org_golang_google_protobuf//reflect/protodesc",
         "@org_golang_google_protobuf//reflect/protoregistry",

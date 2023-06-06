@@ -31,7 +31,7 @@ go install github.com/stackb/grpc-starlark/cmd/grpcstar@latest
 Example:
 
 ```sh
-$ grpc-starlark \
+$ grpcstar \
     -protoset ./path/to/routeguide/routeguide_proto-descriptor-set.proto.bin \
     -file ./example/routeguide/routeguide.grpc.star
 ```

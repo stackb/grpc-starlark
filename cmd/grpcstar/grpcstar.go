@@ -21,7 +21,8 @@ func main() {
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 
 	if err := run(cwd, os.Args[1:]); err != nil {
-		log.Fatal(err)
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
 
 	<-c
