@@ -61,12 +61,12 @@ xi9VgFHxRifxjQrbhZ6GrQ5eix+86OXw6Hm0yF6Md3vrxPRt3gws36RJYaFHcJim
 -----END CERTIFICATE-----
 """
 
-certificate = tls.Certificate(public_key, private_key)
+certificate = crypto.tls.Certificate(public_key, private_key)
 print("certificate:", certificate)
 
-config = tls.Config(
+config = crypto.tls.Config(
     certificates = [certificate],
-    client_auth = tls.ClientAuthType.NONE,
+    client_auth = crypto.tls.ClientAuthType.NONE,
 )
 print("config:", config)
 

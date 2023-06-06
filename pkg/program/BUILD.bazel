@@ -6,11 +6,11 @@ go_library(
     importpath = "github.com/stackb/grpc-starlark/pkg/program",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/starlarkcrypto",
         "//pkg/starlarkgrpc",
         "//pkg/starlarknet",
         "//pkg/starlarkos",
         "//pkg/starlarkthread",
-        "//pkg/starlarktls",
         "@com_github_stripe_skycfg//go/protomodule",
         "@net_starlark_go//lib/proto",
         "@net_starlark_go//lib/time",

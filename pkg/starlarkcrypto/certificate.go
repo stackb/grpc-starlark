@@ -1,4 +1,4 @@
-package starlarktls
+package starlarkcrypto
 
 import (
 	"crypto/tls"

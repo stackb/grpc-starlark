@@ -1,7 +1,7 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
-    name = "starlarktls",
+    name = "starlarkcrypto",
     srcs = [
         "certificate.go",
         "client_auth.go",
@@ -9,7 +9,7 @@ go_library(
         "module.go",
         "x509_cert_pool.go",
     ],
-    importpath = "github.com/stackb/grpc-starlark/pkg/starlarktls",
+    importpath = "github.com/stackb/grpc-starlark/pkg/starlarkcrypto",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/starlarkutil",
@@ -19,9 +19,9 @@ go_library(
 )
 
 go_test(
-    name = "starlarktls_test",
+    name = "starlarkcrypto_test",
     srcs = ["module_test.go"],
-    embed = [":starlarktls"],
+    embed = [":starlarkcrypto"],
     deps = [
         "//pkg/moduletest",
         "@net_starlark_go//starlark",
