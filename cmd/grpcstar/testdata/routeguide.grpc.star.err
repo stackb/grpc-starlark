@@ -1,6 +1,6 @@
 [testdata/routeguide.grpc.star:92:10] GetFeature: <example.routeguide.Feature name:"point (1,2)">
 [testdata/routeguide.grpc.star:101:14] ListFeatures: <example.routeguide.Feature name:"lo (1,2)">
 [testdata/routeguide.grpc.star:101:14] ListFeatures: <example.routeguide.Feature name:"hi (1,4)">
-[testdata/routeguide.grpc.star:109:10] RecordRoute: <example.routeguide.RouteSummary point_count:2 distance:2 elapsed_time:10>
+[testdata/routeguide.grpc.star:109:10] RecordRoute: <example.routeguide.RouteSummary point_count:2  distance:2  elapsed_time:10>
 [testdata/routeguide.grpc.star:117:14] RouteChat: <example.routeguide.RouteNote message:"A">
 [testdata/routeguide.grpc.star:117:14] RouteChat: <example.routeguide.RouteNote message:"B">

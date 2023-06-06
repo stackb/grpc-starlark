@@ -1,4 +1,4 @@
-[testdata/headers.grpc.star:22:10] server: GetFeature request message: <example.routeguide.Point latitude:2 longitude:1>
+[testdata/headers.grpc.star:22:10] server: GetFeature request message: <example.routeguide.Point latitude:2  longitude:1>
 [testdata/headers.grpc.star:23:10] server: GetFeature request headers: [":authority", "content-type", "user-agent", "x-unary-request"]
 [testdata/headers.grpc.star:24:10] server: GetFeature request header content-type: application/grpc
 [testdata/headers.grpc.star:25:10] server: GetFeature request header user-agent: grpc-go/1.35.0
