@@ -83,7 +83,6 @@ server.register("example.routeguide.RouteGuide", {
 
 channel = grpc.Channel(listener.address)
 client = grpc.Client("example.routeguide.RouteGuide", channel)
-thread.defer(lambda: server.start(listener))
 
 # === [Client Call Functions] ================================================
 
@@ -91,7 +90,6 @@ def call_get_feature():
     point = pb.Point(longitude = 1, latitude = 2)
     feature = client.GetFeature(point)
     print("GetFeature:", feature)
-    server.stop()
 
 def call_list_features():
     rect = pb.Rectangle(
@@ -101,7 +99,6 @@ def call_list_features():
     stream = client.ListFeatures(rect)
     for response in stream:
         print("ListFeatures:", response)
-    server.stop()
 
 def call_record_route():
     stream = client.RecordRoute()
@@ -110,7 +107,6 @@ def call_record_route():
     stream.close_send()
     response = stream.recv()
     print("RecordRoute:", response)
-    server.stop()
 
 def call_route_chat():
     stream = client.RouteChat()
@@ -119,4 +115,11 @@ def call_route_chat():
     stream.close_send()
     for response in stream:
         print("RouteChat:", response)
+
+def main(ctx):
+    thread.defer(lambda: server.start(listener))
+    call_get_feature()
+    call_list_features()
+    call_record_route()
+    call_route_chat()
     server.stop()
