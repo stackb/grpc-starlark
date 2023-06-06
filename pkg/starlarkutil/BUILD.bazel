@@ -1,0 +1,9 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "starlarkutil",
+    srcs = ["symbol.go"],
+    importpath = "github.com/stackb/grpc-starlark/pkg/starlarkutil",
+    visibility = ["//visibility:public"],
+    deps = ["@net_starlark_go//starlark"],
+)

@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "starlarktls",
+    srcs = [
+        "certificate.go",
+        "client_auth.go",
+        "config.go",
+        "module.go",
+    ],
+    importpath = "github.com/stackb/grpc-starlark/pkg/starlarktls",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/starlarkutil",
+        "@net_starlark_go//starlark",
+        "@net_starlark_go//starlarkstruct",
+    ],
+)
+
+go_test(
+    name = "starlarktls_test",
+    srcs = ["module_test.go"],
+    embed = [":starlarktls"],
+    deps = [
+        "//pkg/moduletest",
+        "@net_starlark_go//starlark",
+    ],
+)

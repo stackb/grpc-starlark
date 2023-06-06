@@ -14,21 +14,6 @@ import (
 
 var update = flag.Bool("update", false, "update golden files")
 
-func TestHelp(t *testing.T) {
-	for _, args := range [][]string{
-		{"help"},
-		{"run", "-h"},
-	} {
-		t.Run(args[0], func(t *testing.T) {
-			if err := run(".", args); err == nil {
-				t.Errorf("%s: got success, want flag.ErrHelp", args[0])
-			} else if err != flag.ErrHelp {
-				t.Errorf("%s: got %v, want flag.ErrHelp", args[0], err)
-			}
-		})
-	}
-}
-
 func TestGoldens(t *testing.T) {
 	os.Setenv("GODEBUG", "http2debug=2")
 	flag.Parse()

@@ -84,13 +84,13 @@ for interaction with gRPC services.
 grpcstar may be run with one of the commands below. If no command is given,
 grpcstar defaults to "eval".
 
-  eval - grpcstar will load the given args as filenames.
+  run - grpcstar will load the given args as filenames.
   help - show this message.
 
 For usage information for a specific command, run the command with the -h flag.
 For example:
 
-  grpcstar eval -h
+  grpcstar run -h
 
 grpcstar is under active development, and its interface may change
 without notice.
