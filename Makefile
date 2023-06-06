@@ -4,7 +4,7 @@ build:
 
 .PHONY: test
 test:
-	bazel test ...
+	bazel test ... --runs_per_test=30
 
 golden:
 	bazel run //cmd/grpcstar:grpcstar_test \

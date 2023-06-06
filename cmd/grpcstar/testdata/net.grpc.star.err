@@ -1,5 +1,2 @@
 [testdata/net.grpc.star:2:10] === Example Net Usage ===
 [testdata/net.grpc.star:3:10] net.Listener constructor <built-in function net.Listener>
-[testdata/net.grpc.star:5:10] listener instance: <net.Listener tcp 127.0.0.1:1301>
-[testdata/net.grpc.star:6:10] listener.address: 127.0.0.1:1301
-[testdata/net.grpc.star:7:10] listener.network: tcp
