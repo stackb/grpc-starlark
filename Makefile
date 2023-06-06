@@ -1,9 +1,10 @@
 .PHONY: build
 build:
-	bazel build \
-		//example/routeguide:routeguide_proto_descriptor \
-		//cmd/grpcstar
+	bazel build ...
 
+.PHONY: test
+test:
+	bazel test ...
 
 .PHONY: serve
 serve: build
