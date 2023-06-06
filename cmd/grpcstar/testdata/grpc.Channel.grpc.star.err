@@ -1,3 +1,2 @@
 [testdata/grpc.Channel.grpc.star:2:10] grpc.Channel: <built-in function grpc.Channel>
-[testdata/grpc.Channel.grpc.star:3:10] dir(grpc.Channel): []
-[testdata/grpc.Channel.grpc.star:5:10] channel: grpc.Channel<localhost:9654, IDLE>
+[testdata/grpc.Channel.grpc.star:4:10] channel: grpc.Channel<localhost:9654, IDLE>

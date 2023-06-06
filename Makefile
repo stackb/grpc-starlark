@@ -6,6 +6,12 @@ build:
 test:
 	bazel test ...
 
+golden:
+	bazel run //cmd/grpcstar:grpcstar_test \
+		--action_env='GODEBUG=http2debug=1' \
+		-- \
+		--update
+
 .PHONY: serve
 serve: build
 	GODEBUG=http2debug=2 \
@@ -17,6 +23,3 @@ serve: build
 routeguide_proto_descriptor:
 	bazel build //example/routeguide:routeguide_proto_descriptor
 	cp -f bazel-bin/example/routeguide/routeguide_proto_descriptor.pb pkg/starlarkgrpc/
-
-update_goldens:
-	bazel run //cmd/grpcstar:grpcstar_test --action_env='GODEBUG=http2debug=1' -- --update
