@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/stackb/grpc-starlark/pkg/protodescriptorset"
 	"go.starlark.net/starlark"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/reflect/protoregistry"
 	"gopkg.in/yaml.v2"
 )
-
-type marshaler func(m protoreflect.ProtoMessage) ([]byte, error)
 
 type OutputType string
 
@@ -25,13 +25,14 @@ const (
 )
 
 type Config struct {
-	Protoset    string
+	ProtoFiles  *protoregistry.Files
+	ProtoTypes  *protoregistry.Types
 	File        string
 	Entrypoint  string
-	Interactive bool
-	Output      string
-	Marshaler   marshaler
 	Vars        starlark.StringDict
+	Interactive bool
+	OutputType  OutputType
+	Marshaler   func(m protoreflect.ProtoMessage) ([]byte, error)
 }
 
 func ParseConfig(args []string) (*Config, error) {
@@ -40,8 +41,11 @@ func ParseConfig(args []string) (*Config, error) {
 
 	flags := flag.NewFlagSet("grpcstar", flag.ExitOnError)
 
-	flags.StringVar(&cfg.Protoset, "protoset", "", "filepath to proto descriptor set (mandatory)")
-	flags.StringVar(&cfg.Protoset, "p", "", "filepath to proto descriptor set (mandatory)")
+	var protosetFile string
+	var output string
+
+	flags.StringVar(&protosetFile, "protoset", "", "filepath to proto descriptor set (mandatory)")
+	flags.StringVar(&protosetFile, "p", "", "filepath to proto descriptor set (mandatory)")
 
 	flags.StringVar(&cfg.File, "file", "", "entrypoint file (mandatory)")
 	flags.StringVar(&cfg.File, "f", "", "entrypoint file (mandatory)")
@@ -49,8 +53,8 @@ func ParseConfig(args []string) (*Config, error) {
 	flags.StringVar(&cfg.Entrypoint, "entrypoint", "main", "entrypoint function (optional)")
 	flags.StringVar(&cfg.Entrypoint, "e", "main", "entrypoint function (optional)")
 
-	flags.StringVar(&cfg.Output, "output", "json", "output type (optional; one of json|proto|text|yaml)")
-	flags.StringVar(&cfg.Output, "o", "json", "output type (optional; one of json|proto|text|yaml)")
+	flags.StringVar(&output, "output", "json", "output type (optional; one of json|proto|text|yaml)")
+	flags.StringVar(&output, "o", "json", "output type (optional; one of json|proto|text|yaml)")
 
 	flags.BoolVar(&cfg.Interactive, "interactive", false, "interactive mode (REPL)")
 	flags.BoolVar(&cfg.Interactive, "i", false, "interactive mode (REPL)")
@@ -59,22 +63,31 @@ func ParseConfig(args []string) (*Config, error) {
 		return nil, fmt.Errorf("parsing flags: %w", err)
 	}
 
+	if protosetFile != "" {
+		files, err := protodescriptorset.LoadFiles(protosetFile)
+		if err != nil {
+			return nil, err
+		}
+		cfg.ProtoFiles = files
+		cfg.ProtoTypes = protodescriptorset.FileTypes(files)
+	}
+
 	if cfg.File == "" {
 		return nil, fmt.Errorf("-file is mandatory")
 	}
 
-	if cfg.Protoset == "" {
-		return nil, fmt.Errorf("-protoset is mandatory")
-	}
-
-	switch cfg.Output {
-	case string(OutputJson):
+	switch OutputType(output) {
+	case OutputJson:
+		cfg.OutputType = OutputJson
 		cfg.Marshaler = protojson.Marshal
-	case string(OutputProto):
+	case OutputProto:
+		cfg.OutputType = OutputProto
 		cfg.Marshaler = proto.Marshal
-	case string(OutputText):
+	case OutputText:
+		cfg.OutputType = OutputText
 		cfg.Marshaler = prototext.Marshal
-	case string(OutputYaml):
+	case OutputYaml:
+		cfg.OutputType = OutputYaml
 		cfg.Marshaler = func(m protoreflect.ProtoMessage) ([]byte, error) {
 			data, err := protojson.Marshal(m)
 			if err != nil {

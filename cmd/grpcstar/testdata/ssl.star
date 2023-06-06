@@ -242,8 +242,8 @@ YYoLVe9y
 -----END CERTIFICATE-----
 """
 
-bundle = struct(
-    ca_crt = ca_crt,
+ca_bundle = struct(
+    ca_cert = ca_cert,
     ca_key = ca_key,
     service_csr = service_csr,
     service_key = service_key,

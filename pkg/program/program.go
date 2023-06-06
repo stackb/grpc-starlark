@@ -13,7 +13,6 @@ import (
 	"go.starlark.net/starlarkstruct"
 	"google.golang.org/protobuf/reflect/protoregistry"
 
-	"github.com/stackb/grpc-starlark/pkg/protodescriptorset"
 	"github.com/stackb/grpc-starlark/pkg/starlarkcrypto"
 	"github.com/stackb/grpc-starlark/pkg/starlarkgrpc"
 	"github.com/stackb/grpc-starlark/pkg/starlarknet"
@@ -27,20 +26,13 @@ type Program struct {
 }
 
 func NewProgram(cfg *Config) (*Program, error) {
-	files, err := protodescriptorset.LoadFiles(cfg.Protoset)
-	if err != nil {
-		return nil, err
-	}
-	types := protodescriptorset.FileTypes(files)
-
 	skyConfig, err := skycfg.Load(context.Background(), cfg.File,
-		skycfg.WithProtoRegistry(skycfg.NewUnstableProtobufRegistryV2(types)),
-		skycfg.WithGlobals(newPredeclared(files, types)),
+		skycfg.WithProtoRegistry(skycfg.NewUnstableProtobufRegistryV2(cfg.ProtoTypes)),
+		skycfg.WithGlobals(newPredeclared(cfg.ProtoFiles, cfg.ProtoTypes)),
 	)
 	if err != nil {
 		return nil, err
 	}
-
 	return &Program{cfg, skyConfig}, nil
 }
 
@@ -67,7 +59,7 @@ func (p *Program) Exec() error {
 		return err
 	}
 	var sep string
-	if p.cfg.Output == string(OutputYaml) {
+	if p.cfg.OutputType == OutputYaml {
 		sep = "---\n"
 	}
 	for _, msg := range msgs {

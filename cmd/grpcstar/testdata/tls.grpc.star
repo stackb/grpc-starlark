@@ -3,6 +3,9 @@
 Demonstrates the sending and revcing of a message with mutual TLS.
 
 """
+
+load("ssl.star", "ca_bundle")
+
 pb = proto.package("example.routeguide")
 service_name = "example.routeguide.RouteGuide"
 
@@ -235,7 +238,10 @@ xi9VgFHxRifxjQrbhZ6GrQ5eix+86OXw6Hm0yF6Md3vrxPRt3gws36RJYaFHcJim
 -----END CERTIFICATE-----
 """
 
-certificate = crypto.tls.Certificate(public_key, private_key)
+certificate = crypto.tls.Certificate(
+    public_key = ca_bundle.service_pem,
+    private_key = ca_bundle.service_key,
+)
 print("certificate:", certificate)
 
 root_cas = crypto.x509.CertPool()

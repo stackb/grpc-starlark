@@ -10,10 +10,10 @@ import (
 
 func TestTlsModule(t *testing.T) {
 	moduletest.ExprTests(t, starlark.StringDict{
-		"tls": Module,
+		"crypto": Module,
 	}, []*moduletest.ExprTest{
 		{
-			Expr: "tls.Certificate",
+			Expr: "crypto.tls.Certificate",
 			Want: "<built-in function tls.Certificate>",
 		},
 	})
