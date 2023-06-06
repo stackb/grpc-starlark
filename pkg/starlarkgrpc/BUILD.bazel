@@ -22,7 +22,7 @@ go_library(
         "stream_iterator.go",
         "structs.go",
         "symbol.go",
-        "tls_credentials.go",
+        "transport_credentials.go",
         "unary_client_interceptor.go",
     ],
     importpath = "github.com/stackb/grpc-starlark/pkg/starlarkgrpc",
