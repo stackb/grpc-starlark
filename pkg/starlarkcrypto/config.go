@@ -2,6 +2,7 @@ package starlarkcrypto
 
 import (
 	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 
 	"github.com/stackb/grpc-starlark/pkg/starlarkutil"
@@ -9,18 +10,21 @@ import (
 	"go.starlark.net/starlarkstruct"
 )
 
-type Config struct {
+type TlsConfig struct {
 	*tls.Config
 	*starlarkstruct.Struct
 }
 
-func newConfig(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+func newTlsConfig(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	var certificates *starlark.List
+	var rootCertPool *x509CertPool
 	var clientAuth int
-
+	var insecureSkipVerify bool
 	if err := starlark.UnpackArgs(fn.Name(), args, kwargs,
 		"certificates?", &certificates,
 		"client_auth?", &clientAuth,
+		"insecure_skip_verify?", &insecureSkipVerify,
+		"root_certificate_authorities?", &rootCertPool,
 	); err != nil {
 		return nil, err
 	}
@@ -35,15 +39,22 @@ func newConfig(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tupl
 		}
 	}
 
-	return Config{
+	var rootCas *x509.CertPool
+	if rootCertPool != nil {
+		rootCas = rootCertPool.CertPool
+	}
+	return TlsConfig{
 		Config: &tls.Config{
-			Certificates: certs,
-			ClientAuth:   tls.ClientAuthType(clientAuth),
+			RootCAs:            rootCas,
+			InsecureSkipVerify: insecureSkipVerify,
+			Certificates:       certs,
+			ClientAuth:         tls.ClientAuthType(clientAuth),
 		},
 		Struct: starlarkstruct.FromStringDict(
 			starlarkutil.Symbol("tls.Config"),
 			starlark.StringDict{
-				"certificates": certificates,
+				"certificates":         certificates,
+				"insecure_skip_verify": starlark.Bool(insecureSkipVerify),
 			},
 		),
 	}, nil

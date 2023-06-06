@@ -9,18 +9,19 @@ import (
 	"go.starlark.net/starlarkstruct"
 )
 
-type X509CertPool struct {
+type x509CertPool struct {
 	*x509.CertPool
 	*starlarkstruct.Struct
 }
 
-func newX509CertPool(name string, pool *x509.CertPool) *X509CertPool {
-	return &X509CertPool{
+func newX509CertPool(name string, pool *x509.CertPool) *x509CertPool {
+	return &x509CertPool{
 		CertPool: pool,
 		Struct: starlarkstruct.FromStringDict(
 			starlarkutil.Symbol(name),
 			starlark.StringDict{
-				"add": starlark.NewBuiltin("add", addCert(pool)),
+				"add":    starlark.NewBuiltin("add", addCert(pool)),
+				"append": starlark.NewBuiltin("append", appendCertsFromPem(pool)),
 			},
 		),
 	}
@@ -59,5 +60,18 @@ func addCert(pool *x509.CertPool) func(thread *starlark.Thread, fn *starlark.Bui
 		}
 		pool.AddCert(cert)
 		return starlark.None, nil
+	}
+}
+
+func appendCertsFromPem(pool *x509.CertPool) func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+	return func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+		var pem string
+		if err := starlark.UnpackArgs(fn.Name(), args, kwargs,
+			"pem", &pem,
+		); err != nil {
+			return nil, err
+		}
+		ok := pool.AppendCertsFromPEM([]byte(pem))
+		return starlark.Bool(ok), nil
 	}
 }

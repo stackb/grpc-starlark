@@ -21,9 +21,9 @@ var Module = &starlarkstruct.Module{
 		"tls": starlarkstruct.FromStringDict(
 			starlarkutil.Symbol("tls"),
 			starlark.StringDict{
-				"Config":         starlark.NewBuiltin("tls.Config", newConfig),
+				"Config":         starlark.NewBuiltin("tls.Config", newTlsConfig),
 				"Certificate":    starlark.NewBuiltin("tls.Certificate", newCertificate),
-				"ClientAuthType": clientAuthType,
+				"ClientAuthType": tlsClientAuthType,
 			},
 		),
 	},

@@ -15,7 +15,6 @@ import (
 var update = flag.Bool("update", false, "update golden files")
 
 func TestGoldens(t *testing.T) {
-	os.Setenv("GODEBUG", "http2debug=2")
 	flag.Parse()
 	workspaceDir := os.Getenv("BUILD_WORKING_DIRECTORY")
 
@@ -58,9 +57,9 @@ func TestGoldens(t *testing.T) {
 	for _, pair := range tests {
 		t.Run(pair.file, func(t *testing.T) {
 			if err := run(".", []string{
-				"-log_file=" + pair.logFilename,
+				// "-log_file=" + pair.logFilename,
 				"-protoset=../../example/routeguide/routeguide_proto_descriptor.pb",
-				filepath.Join("testdata", pair.file),
+				"-file=" + filepath.Join("testdata", pair.file),
 			}); err != nil {
 				t.Fatal(err)
 			}

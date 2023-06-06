@@ -15,7 +15,7 @@ type transportCredentials struct {
 }
 
 func newTlsCredentials(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-	var config starlarkcrypto.Config
+	var config starlarkcrypto.TlsConfig
 
 	if err := starlark.UnpackArgs(fn.Name(), args, kwargs,
 		"config", &config,

@@ -1,18 +1,19 @@
 package program
 
 import (
+	"context"
 	"fmt"
-	"log"
+	"os"
 
+	"github.com/stripe/skycfg"
 	"github.com/stripe/skycfg/go/protomodule"
-	libproto "go.starlark.net/lib/proto"
 	libtime "go.starlark.net/lib/time"
+	"go.starlark.net/repl"
 	"go.starlark.net/starlark"
 	"go.starlark.net/starlarkstruct"
-	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/reflect/protoregistry"
-	"google.golang.org/protobuf/types/dynamicpb"
 
+	"github.com/stackb/grpc-starlark/pkg/protodescriptorset"
 	"github.com/stackb/grpc-starlark/pkg/starlarkcrypto"
 	"github.com/stackb/grpc-starlark/pkg/starlarkgrpc"
 	"github.com/stackb/grpc-starlark/pkg/starlarknet"
@@ -21,47 +22,81 @@ import (
 )
 
 type Program struct {
-	Files         *protoregistry.Files
-	Reporter      func(msg string)
-	ErrorReporter func(err error)
-	Predeclared   starlark.StringDict
+	cfg       *Config
+	skyConfig *skycfg.Config
 }
 
-func NewProgram(files *protoregistry.Files) *Program {
-	return &Program{
-		Files:       files,
-		Predeclared: newPredeclared(files),
-		Reporter: func(msg string) {
-			log.Println(msg)
-		},
-		ErrorReporter: func(err error) {
-			fmt.Println("grpc-starlark error> ", err.Error())
-		},
-	}
-}
-
-func (p *Program) Init(filename string, src interface{}) (*starlark.StringDict, *starlark.Thread, error) {
-	_, program, err := starlark.SourceProgram(filename, src, p.Predeclared.Has)
+func NewProgram(cfg *Config) (*Program, error) {
+	files, err := protodescriptorset.LoadFiles(cfg.Protoset)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
+	types := protodescriptorset.FileTypes(files)
 
-	thread := new(starlark.Thread)
-	thread.Name = "main"
-	thread.Print = func(thread *starlark.Thread, msg string) {
-		p.Reporter(msg)
-	}
-	libproto.SetPool(thread, p.Files)
-
-	globals, err := program.Init(thread, p.Predeclared)
+	skyConfig, err := skycfg.Load(context.Background(), cfg.File,
+		skycfg.WithProtoRegistry(skycfg.NewUnstableProtobufRegistryV2(types)),
+		skycfg.WithGlobals(newPredeclared(files, types)),
+	)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	return &globals, thread, nil
+	return &Program{cfg, skyConfig}, nil
 }
 
-func newPredeclared(files *protoregistry.Files) starlark.StringDict {
+func (p *Program) Run(options ...skycfg.ExecOption) error {
+	if p.cfg.Interactive {
+		p.REPL()
+		return nil
+	}
+	if err := p.Exec(); err != nil {
+		if err, ok := err.(*starlark.EvalError); ok {
+			return fmt.Errorf("%s: %w", err.Backtrace(), err)
+		}
+		return err
+	}
+	return nil
+}
+
+func (p *Program) Exec() error {
+	msgs, err := p.skyConfig.Main(context.Background(),
+		skycfg.WithEntryPoint(p.cfg.Entrypoint),
+		skycfg.WithVars(p.cfg.Vars),
+	)
+	if err != nil {
+		return err
+	}
+	var sep string
+	if p.cfg.Output == string(OutputYaml) {
+		sep = "---\n"
+	}
+	for _, msg := range msgs {
+		data, err := p.cfg.Marshaler(msg)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("%s%s\n", sep, string(data))
+	}
+	return nil
+}
+
+func (p *Program) REPL() {
+	thread := &starlark.Thread{}
+	globals := make(starlark.StringDict)
+	globals["exit"] = starlark.NewBuiltin("exit", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+		os.Exit(0)
+		return starlark.None, nil
+	})
+	for key, value := range p.skyConfig.Globals() {
+		globals[key] = value
+	}
+	for key, value := range p.skyConfig.Locals() {
+		globals[key] = value
+	}
+	repl.REPL(thread, globals)
+}
+
+func newPredeclared(files *protoregistry.Files, types *protoregistry.Types) starlark.StringDict {
 	return starlark.StringDict{
 		"os":     starlarkos.Module,
 		"net":    starlarknet.Module,
@@ -69,29 +104,8 @@ func newPredeclared(files *protoregistry.Files) starlark.StringDict {
 		"time":   libtime.Module,
 		"crypto": starlarkcrypto.Module,
 		"grpc":   starlarkgrpc.NewModule(files),
-		"proto":  protomodule.NewModule(fileRegistryTypes(files)),
+		"proto":  protomodule.NewModule(types),
 		"struct": starlark.NewBuiltin("struct", starlarkstruct.Make),
 		"module": starlark.NewBuiltin("module", starlarkstruct.MakeModule),
 	}
-}
-
-func fileRegistryTypes(files *protoregistry.Files) *protoregistry.Types {
-	var types protoregistry.Types
-	files.RangeFiles(func(fd protoreflect.FileDescriptor) bool {
-		messages := fd.Messages()
-		for i := 0; i < messages.Len(); i++ {
-			md := messages.Get(i)
-			msg := dynamicpb.NewMessage(md)
-			msgType := msg.Type()
-			types.RegisterMessage(msgType)
-		}
-		enums := fd.Enums()
-		for i := 0; i < enums.Len(); i++ {
-			ed := enums.Get(i)
-			enumType := dynamicpb.NewEnumType(ed)
-			types.RegisterEnum(enumType)
-		}
-		return true
-	})
-	return &types
 }

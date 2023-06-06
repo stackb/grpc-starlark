@@ -8,7 +8,7 @@ import (
 	"go.starlark.net/starlarkstruct"
 )
 
-var clientAuthType = starlarkstruct.FromStringDict(
+var tlsClientAuthType = starlarkstruct.FromStringDict(
 	starlarkutil.Symbol("tls.ClientAuthType"),
 	starlark.StringDict{
 		"NONE":               starlark.MakeInt(int(tls.NoClientCert)),
