@@ -28,9 +28,11 @@ func TestGoldens(t *testing.T) {
 	}
 
 	type goldenTest struct {
-		file        string
-		goldenFile  string
-		logFilename string
+		file          string
+		goldenOutFile string
+		goldenErrFile string
+		outFile       string
+		errFile       string
 	}
 	var tests []*goldenTest
 
@@ -44,44 +46,78 @@ func TestGoldens(t *testing.T) {
 
 	for _, file := range entries {
 		if strings.HasSuffix(file.Name(), ".grpc.star") {
-			goldenName := file.Name() + ".out"
-			logFilename := file.Name() + ".log"
 			tests = append(tests, &goldenTest{
-				file:        file.Name(),
-				goldenFile:  goldenName,
-				logFilename: logFilename,
+				file:          file.Name(),
+				goldenOutFile: file.Name() + ".out",
+				goldenErrFile: file.Name() + ".err",
+				outFile:       file.Name() + ".stdout",
+				errFile:       file.Name() + ".stderr",
 			})
 		}
 	}
 
 	for _, pair := range tests {
 		t.Run(pair.file, func(t *testing.T) {
+			outFile, err := os.Create(pair.outFile)
+			if err != nil {
+				t.Fatal(err)
+			}
+			errFile, err := os.Create(pair.errFile)
+			if err != nil {
+				t.Fatal(err)
+			}
+			stdout := os.Stdout
+			stderr := os.Stderr
+			os.Stdout = outFile
+			os.Stderr = errFile
+			defer func() {
+				os.Stderr = stdout
+				os.Stderr = stderr
+			}()
+
 			if err := run(".", []string{
-				// "-log_file=" + pair.logFilename,
 				"-protoset=../../example/routeguide/routeguide_proto_descriptor.pb",
 				"-file=" + filepath.Join("testdata", pair.file),
 			}); err != nil {
 				t.Fatal(err)
 			}
-			got, err := os.ReadFile(pair.logFilename)
+			outFile.Close()
+			errFile.Close()
+
+			gotOut, err := os.ReadFile(pair.outFile)
 			if err != nil {
-				t.Fatal("reading log file:", err)
+				t.Fatal("reading out file:", err)
 			}
+			gotErr, err := os.ReadFile(pair.errFile)
+			if err != nil {
+				t.Fatal("reading err file:", err)
+			}
+
 			if *update {
 				if workspaceDir == "" {
 					t.Fatal("BUILD_WORKING_DIRECTORY not set!")
 				}
-				srcFilename := filepath.Join(workspaceDir, "cmd", "grpcstar", "testdata", pair.goldenFile)
-				if err := os.WriteFile(srcFilename, got, os.ModePerm); err != nil {
-					t.Fatal("writing golden file:", err)
+				dir := filepath.Join(workspaceDir, "cmd", "grpcstar", "testdata")
+				if err := os.WriteFile(filepath.Join(dir, pair.goldenOutFile), gotOut, os.ModePerm); err != nil {
+					t.Fatal("writing goldenOut file:", err)
+				}
+				if err := os.WriteFile(filepath.Join(dir, pair.goldenErrFile), gotErr, os.ModePerm); err != nil {
+					t.Fatal("writing goldenErr file:", err)
 				}
 			} else {
-				want, err := os.ReadFile(filepath.Join("testdata", pair.goldenFile))
+				wantOut, err := os.ReadFile(filepath.Join("testdata", pair.goldenOutFile))
 				if err != nil {
-					t.Fatal("reading golden file:", err)
+					t.Fatal("reading goldenOut file:", err)
 				}
-				if diff := cmp.Diff(string(want), string(got)); diff != "" {
-					t.Errorf("expr (-want +got):\n%s", diff)
+				wantErr, err := os.ReadFile(filepath.Join("testdata", pair.goldenErrFile))
+				if err != nil {
+					t.Fatal("reading goldenErr file:", err)
+				}
+				if diff := cmp.Diff(string(wantOut), string(gotOut)); diff != "" {
+					t.Errorf("stdout (-want +got):\n%s", diff)
+				}
+				if diff := cmp.Diff(string(wantErr), string(gotErr)); diff != "" {
+					t.Errorf("stderr (-want +got):\n%s", diff)
 				}
 			}
 		})

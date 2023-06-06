@@ -98,7 +98,8 @@ def call_record_route():
     print("client: RecordRoute response trailers:", dir(trailers))
     print("client: RecordRoute response trailer x-streaming-trailer:", getattr(trailers, "x-streaming-trailer", "NOT SET"))
 
-call_get_feature()
-call_record_route()
+def main(ctx):
+    call_get_feature()
+    call_record_route()
 
-server.stop()
+    server.stop()

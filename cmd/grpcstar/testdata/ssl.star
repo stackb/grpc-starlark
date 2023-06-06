@@ -1,34 +1,7 @@
-"""tls.grpc.star 
+"""ssl.star 
+example struct containing openssl-related data
 
-Demonstrates the sending and revcing of a message with mutual TLS.
-
-"""
-pb = proto.package("example.routeguide")
-service_name = "example.routeguide.RouteGuide"
-
-# certificate.conf
-certificate_conf = """
-[req]
-default_bits = 2048
-distinguished_name = dn
-prompt             = no
-req_extensions = req_ext
-
-[dn]
-C="TW"
-ST="Taiwan"
-L="Taipei"
-O="YIDAS"
-OU="Service"
-emailAddress="yourmail@mail.com"
-CN="yourdomain.com"
-
-[req_ext]
-subjectAltName = @alt_names
-
-[alt_names]
-DNS.0 = *.yourdomain.com
-DNS.1 = *.dev.yourdomain.com
+From https://itnext.io/practical-guide-to-securing-grpc-connections-with-go-and-tls-part-1-f63058e9d6d1
 """
 
 # openssl genrsa -out ca.key 4096
@@ -173,120 +146,106 @@ nmCcUv77/KGKBqzWZVay8UMQvhy1v7z8s8BVQyWGj8BjSdlg4IQKEYI2AMmtaw==
 -----END RSA PRIVATE KEY-----
 """
 
+# certificate.conf
+# @see https://gist.github.com/yidas/af42d2952d85c0951c1722fcd68716c6
+certificate_conf = """
+[req]
+default_bits = 2048
+distinguished_name = dn
+prompt             = no
+req_extensions = req_ext
+
+[dn]
+C="TW"
+ST="Taiwan"
+L="Taipei"
+O="YIDAS"
+OU="Service"
+emailAddress="yourmail@mail.com"
+CN="yourdomain.com"
+
+[req_ext]
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.0 = *.yourdomain.com
+DNS.1 = *.dev.yourdomain.com
+"""
+
 # openssl req -new -key service.key -out service.csr -config certificate.conf
 service_csr = """
+-----BEGIN CERTIFICATE REQUEST-----
+MIIFFjCCAv4CAQAwgYwxCzAJBgNVBAYTAlRXMQ8wDQYDVQQIDAZUYWl3YW4xDzAN
+BgNVBAcMBlRhaXBlaTEOMAwGA1UECgwFWUlEQVMxEDAOBgNVBAsMB1NlcnZpY2Ux
+IDAeBgkqhkiG9w0BCQEWEXlvdXJtYWlsQG1haWwuY29tMRcwFQYDVQQDDA55b3Vy
+ZG9tYWluLmNvbTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAKsFdAWs
+ndW7Rm64IUaXVdqmNgkzOhR9Wkm9KEX7LRpNpSaJ8D4oJDpxOLwrCHql/pGkaNse
+jt0+NjdYdDpvHRabQ2hSC3klzSK+DkclBl3wt1PRe3r82wxuH5rN7fYxKPNIyc3/
+AzIy4B+zDWke1qvCosDX9Jx1w2YhH+xLYP+ebOWvd1QqCp8/UUDQ+ajT1JZ6g9iy
+5geVhXsGntWZMEuTSlXorK/o0DlGFUi1CwhFe3SUgJtDc3GWVOADOXhnZl+Eh1W2
+p0PITzVfBAH+L29/A4axFULSADD8Yl7BnrcnEXSLaPqv2+ypg1NOoFN0qqiwR1sW
+2lt3fPonFwEngL5YPeL7lLv4NabzRqOHg0drcbNI8AUlB1IGPuaLyXWo+cGQdmVD
+FqdEQFZdulS0SwU66QM6PUGJcCW2IaAhfl8h/Zu8HIQZIRFuWyX/XY23XeEGgVFz
+ZAE3COijlglTzuVGsxujYxrLhVmUb9Lj+LysSgGxjcwSw/f6HZJlCHSMH7Y2PGxI
+lbrqf6CbPT4DonLN15yRe68h7KYFhMAmV+6P4QRjDmYALrQbKdk1ObNaZhFbrHdM
+z8ZRJe2dWTx4cTSUlclC/51DeBsAoFZaEYgYdn03w9PWyc3IUgaffL7eXSX/nEs7
+sj3QM2/MkpCX+vQwLV/kQuL9+Hwvk4RZhAcnAgMBAAGgRDBCBgkqhkiG9w0BCQ4x
+NTAzMDEGA1UdEQQqMCiCECoueW91cmRvbWFpbi5jb22CFCouZGV2LnlvdXJkb21h
+aW4uY29tMA0GCSqGSIb3DQEBCwUAA4ICAQA4hb/ze700Fn0k6kSpHKO4exeh7rci
+s2e5mYsool9XskLyZMvZR1ZQpb7N3NtMTAxrH73nCDXLQZXQSKC8xPvV3lE2034j
+tiCD5eShpN3PzLJXQigKcm/TTnfq0iz99tWRZ+O6UbrBgw+Mz9l1z2cv5nL/rAVv
+p+nbi5UIZl9KmwBoAHJ+02YMRg6aV4kRkmYwFCTsZ/EjxYLF2CNUqLaEi+bTyoEl
+glvY9NWxcYjSWe7xrIe0zG9DYASBtI8Rkh9Vq9/DWyghyMbg8rSb793Giq9zKsqu
+CyxV1XQtIiPbdHPkiH0IC2NpfBq5dx8TFv+poqSF43RlDxY7FF+OJ3yY8e5pH9GC
+7pcmGoJMrjJAme/RrC2akvJi4h8v3bTTpa3DwU7mdPCx4bjve/XsTa2C2lNmSJLO
+7Y8ek3w/WS38p7EkNtrTnWXogLA6fcuMEx7NRzA2+Nk/5tI0MJSiNsBufmg7lP9t
+8dhfxknPNGkpTIGYViFLDd5IYDvYq+kD+cWcdsYJMvw/wkM33Wl/VvVcoqAy5VTd
+LOMstpDnKluX/zl3nEzmPr2SF0KVDssz2jkr+WtmcUYI4To5hJLjOzOy1akiRjbk
+0flhuHRlo67fsHZBHRdQLrhP19poFsnXHdQEQ685MXHOJz8BgrFau7L6suFZLQu2
+i+i8f3NQsg7XiA==
+-----END CERTIFICATE REQUEST-----
 """
 
-root_ca_certificate = """
-"""
-
-# openssl genrsa -out server.key 2048
-private_key = """
------BEGIN RSA PRIVATE KEY-----
-MIIEowIBAAKCAQEA/IWmKuQm/1py64Ieq1YlqbR3XNLLNAfnU6b4dHwyLLEYiCmk
-7BKYp6NtLrpUTFqnFMoWLBsWASkLOr0bsJBd5azV4eWis/B4I4MzAJ5NnVJkOVTu
-NHFTEsib2pD7SouMtLVVe2/29AbGj6dYWzoqLoytklOvI6q633Hc/dT4p2QVn01N
-S4UCoAyGtSNQvZXIXO3pKf5BG51DqYOzBE9BnRoUGN3WOGG6y0wFw8X80nCI2ncv
-pDPBfn+QtT3YAFENBBtGUZyqOUn2tZgJS0fCfT4/ykHO6zQFvheMsRsKlXznuUtL
-bqtpMlL0Fdtjrtv6ZZlOwu69mchWqkmFioZo3QIDAQABAoIBADc0JHJl9ByIsmzH
-wlqkd5FU8W8qad/TBoAkFVapu/JHONyzdelh21tyf7DibQFQJAyIbTZxKWtRhLHv
-m3kK5mwKT6uVnu8FV84zpVeyQ7drxps99OEkEQwfLOsoHLdcMINkzO4yOON6A7ht
-1gQDgCsy99LwVm5OqZGle7FF+KHm8SRkukz1v8S3MTjP3S5BzSBneXbNzZeg5Ied
-68P4ghzJ0MtHprgDx4r1bnueGVYpIWQgehwjr0qYbVZoQ3d6XHEO7GOxx9ba8lWa
-d7/BWynIR3ABR3MSB4tpeyODWa3mp817QWyMGNudDz9Pl+wbodQf5Xz0mRcjvKiC
-q0DTK4UCgYEA/sZWYaJAs6AQbTUigIeH2uPprwxP34k2dW+JN3L4rFTcSxc/aJzw
-4eqVi7EcKAutdu/CPUMzKbeqIA+H8pI8ju/5AuE3x07efcp1Em4jOEblg4X+EAgZ
-CCHVbjcRCYLVUDlIc9kvf0BuJIukV6UDRnjcm5Gg1mw5yMfEF32aJ6sCgYEA/byJ
-zc8KJuUhGylkyXRqUWy2W+r73n/vVbskCaQYWJ0inWfjr5ncB437lXJEQBbSX5Fw
-WI6bJYDm6p6kTFIVWgNHB00MJH/EdBD8PL418fQZyABH1FKquwr4XdH15hri0BYx
-kc++UsQQG7TDLzVvdZYdv/0uRnTtGW6svpecCZcCgYBHDT8n6V0L+za5jhj6KVH8
-/JS+KbvYxmZ2p81ntludi+kH1Art/N680nQ0SgdlL6SHx+OuvB/3oW4DlPE/+AKF
-hm02nWK15cvs3tp5clfGKRd275ZkGC4K84yXOSo6Mc+VmPQYwtgZL/nHnV4Ox0k7
-jRdRF3L4eaQ/115bgr7MEwKBgQCYhxG/qknL/8ja7xMrFtQihltI/gTSR82zl3+e
-XApWmn8IaD8yfCcMU4l82Oe2LwHfeSoz0eXpsYceWqchSeaT6Yx1ExfNiRCrRNqc
-GSuMetRUqfaD5/3B2mJa47AR1u+pbu31XRBn6HxWa185rcGGyeqwUp3StM8ijqlB
-GRovmQKBgEQpI0xH+uS4HeRzfgNjVKGg9Pus/XoJ2HObpyoYp9Mucn2GPuYWGXGv
-f44OozrJXMj0lbM1ijL0mZojrZmGErTu9nbrnAycyBZ44c/2VoXupH+JgnjoHfeM
-Ei1Wpk8lmqQM3BZS1Mv4sxKA9itJr7FVE/zjr4VS1FkdyVIesXLh
------END RSA PRIVATE KEY-----
-"""
-
-# openssl req -new -x509 -sha256 -key server.key -out server.crt -days 3650
-public_key = """
+# openssl x509 -req -in service.csr -CA ca.cert -CAkey ca.key -CAcreateserial -out service.pem -days 365 -sha256 -extfile certificate.conf -extensions req_ext
+service_pem = """
 -----BEGIN CERTIFICATE-----
-MIIDSjCCAjICCQCwp/mPa5xmijANBgkqhkiG9w0BAQsFADBnMQswCQYDVQQGEwJ1
-czELMAkGA1UECAwCY28xEDAOBgNVBAcMB2JvdWxkZXIxFDASBgNVBAoMC3N0YWNr
-LmJ1aWxkMQ0wCwYDVQQLDARncnBjMRQwEgYDVQQDDAtzdGFjay5idWlsZDAeFw0y
-MzA2MDYwMDEwMjdaFw0zMzA2MDMwMDEwMjdaMGcxCzAJBgNVBAYTAnVzMQswCQYD
-VQQIDAJjbzEQMA4GA1UEBwwHYm91bGRlcjEUMBIGA1UECgwLc3RhY2suYnVpbGQx
-DTALBgNVBAsMBGdycGMxFDASBgNVBAMMC3N0YWNrLmJ1aWxkMIIBIjANBgkqhkiG
-9w0BAQEFAAOCAQ8AMIIBCgKCAQEA/IWmKuQm/1py64Ieq1YlqbR3XNLLNAfnU6b4
-dHwyLLEYiCmk7BKYp6NtLrpUTFqnFMoWLBsWASkLOr0bsJBd5azV4eWis/B4I4Mz
-AJ5NnVJkOVTuNHFTEsib2pD7SouMtLVVe2/29AbGj6dYWzoqLoytklOvI6q633Hc
-/dT4p2QVn01NS4UCoAyGtSNQvZXIXO3pKf5BG51DqYOzBE9BnRoUGN3WOGG6y0wF
-w8X80nCI2ncvpDPBfn+QtT3YAFENBBtGUZyqOUn2tZgJS0fCfT4/ykHO6zQFvheM
-sRsKlXznuUtLbqtpMlL0Fdtjrtv6ZZlOwu69mchWqkmFioZo3QIDAQABMA0GCSqG
-SIb3DQEBCwUAA4IBAQAdYUOvbbClQzOTghSQSr9Y3F0EjsQ8Wyji+IjVugUikguv
-EVw4qOaUmkPrkwwIF1/PVPdIG1dt7VC40FeQwyvd2kunAXREzMkY8mMXwrNWT3Ls
-cc0SaIAchF7U34U0yFPDC5JWEoKPXHZTrsY3+sxhXMEIdhu7Ls1JIRAPa4mEKQiM
-qwj27L1hZ/po3HBtMqU0RgM1RMSZRdyRVftTjKZPkNjIV9NGS+7OWp1dBXHDGgN+
-xi9VgFHxRifxjQrbhZ6GrQ5eix+86OXw6Hm0yF6Md3vrxPRt3gws36RJYaFHcJim
-/q4MADkw+J2qHriBnzA3PttJY6Rx+PCGlKFXQ3ci
+MIIFcjCCA1qgAwIBAgIJAJJQ3VGH9o16MA0GCSqGSIb3DQEBCwUAMC0xCzAJBgNV
+BAYTAlVTMQswCQYDVQQIDAJOSjERMA8GA1UECgwIQ0EsIEluYy4wHhcNMjMwNjA2
+MDMyNjUzWhcNMjQwNjA1MDMyNjUzWjCBjDELMAkGA1UEBhMCVFcxDzANBgNVBAgM
+BlRhaXdhbjEPMA0GA1UEBwwGVGFpcGVpMQ4wDAYDVQQKDAVZSURBUzEQMA4GA1UE
+CwwHU2VydmljZTEgMB4GCSqGSIb3DQEJARYReW91cm1haWxAbWFpbC5jb20xFzAV
+BgNVBAMMDnlvdXJkb21haW4uY29tMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIIC
+CgKCAgEAqwV0Bayd1btGbrghRpdV2qY2CTM6FH1aSb0oRfstGk2lJonwPigkOnE4
+vCsIeqX+kaRo2x6O3T42N1h0Om8dFptDaFILeSXNIr4ORyUGXfC3U9F7evzbDG4f
+ms3t9jEo80jJzf8DMjLgH7MNaR7Wq8KiwNf0nHXDZiEf7Etg/55s5a93VCoKnz9R
+QND5qNPUlnqD2LLmB5WFewae1ZkwS5NKVeisr+jQOUYVSLULCEV7dJSAm0NzcZZU
+4AM5eGdmX4SHVbanQ8hPNV8EAf4vb38DhrEVQtIAMPxiXsGetycRdIto+q/b7KmD
+U06gU3SqqLBHWxbaW3d8+icXASeAvlg94vuUu/g1pvNGo4eDR2txs0jwBSUHUgY+
+5ovJdaj5wZB2ZUMWp0RAVl26VLRLBTrpAzo9QYlwJbYhoCF+XyH9m7wchBkhEW5b
+Jf9djbdd4QaBUXNkATcI6KOWCVPO5UazG6NjGsuFWZRv0uP4vKxKAbGNzBLD9/od
+kmUIdIwftjY8bEiVuup/oJs9PgOics3XnJF7ryHspgWEwCZX7o/hBGMOZgAutBsp
+2TU5s1pmEVusd0zPxlEl7Z1ZPHhxNJSVyUL/nUN4GwCgVloRiBh2fTfD09bJzchS
+Bp98vt5dJf+cSzuyPdAzb8ySkJf69DAtX+RC4v34fC+ThFmEBycCAwEAAaM1MDMw
+MQYDVR0RBCowKIIQKi55b3VyZG9tYWluLmNvbYIUKi5kZXYueW91cmRvbWFpbi5j
+b20wDQYJKoZIhvcNAQELBQADggIBALYgLFAxhMBEkxIdsDyYsOrXBvP3I37HuyIo
+rVQ1+7chI0ymi0Rsrf7VP76AlMb7xVm37elPwKOh0rBpda2hP2/JV7pCOXXv2Nwf
+e930NeJXqL6wDSPQZye8gnvECVHqovdFIawe5s1MnD3srqi/jElhMV1iIO16EatM
+Y4ayASM1sFIFjzAWm+eoSYuusGEyMnLoVlrzgappEMy8IneUosODgfpIeUdoaofK
+BpVobegJJBUE5XnuwnWlkkmJHHcH70bTG1znG7+5g1I/fBHOV3dmvz3JFxhVBz1f
+gebWM6NyIrTJG6pQl313s/3Qmoe2T2T2CjvI5Kc653QeI8idT3XP+w/vGS8hKTMk
+7qSn8obwlFmjQ0Po68rRULwAco8RDNDlIL/5J/2uyJnR6aH290cI8QQP1jVT7DZ5
+bZ13Z2behKIogHcDv70bfsUuniu2D5Nr5uw7s/rY0L/awAEtyMuMuhHGLe94Q+q0
+DTj1r8NuMLsCk1rnT6wTuBM3Bb5mFfquxQIJDSWeICMWQLAz+YDtdpoOQETaruUD
+uiJvqE5b6HnZFIjCZsZ7NxePg5Kk7cmeve3rZ4ipKzy00OXMF/t03kgL2uJYUrrJ
+UsdNljxvOrAk96iU4KZb1YiyLKJiH68z1btjH5UWU1bCxHr3y7JttgFEx/BY/Hsp
+YYoLVe9y
 -----END CERTIFICATE-----
 """
 
-certificate = crypto.tls.Certificate(public_key, private_key)
-print("certificate:", certificate)
-
-root_cas = crypto.x509.CertPool()
-root_cas.append(root_ca_certificate)
-print("root_cas:", root_cas)
-
-config = crypto.tls.Config(
-    certificates = [certificate],
-    client_auth = crypto.tls.ClientAuthType.NONE,
-    insecure_skip_verify = True,
-    root_certificate_authorities = root_cas,
+bundle = struct(
+    ca_crt = ca_crt,
+    ca_key = ca_key,
+    service_csr = service_csr,
+    service_key = service_key,
+    service_pem = service_pem,
 )
-print("config:", config)
-
-print("insecure transport credentials:", grpc.credentials.Insecure())
-creds = grpc.credentials.Tls(config)
-print("secure transport credentials:", creds)
-
-# === [Server Handler Functions] ================================================
-
-def get_feature(stream, point):
-    """get_feature implements a unary method handler
-
-    Args:
-        stream: the stream object
-        point: the requested Point
-    Returns:
-        a Feature, ideally nearest to the given point.
-
-    """
-    return pb.Feature(name = "point (%d,%d)" % (point.longitude, point.latitude))
-
-listener = net.Listener()
-server = grpc.Server(
-    credentials = creds,
-)
-server.register(service_name, {
-    "GetFeature": get_feature,
-})
-thread.defer(lambda: server.start(listener))
-
-channel = grpc.Channel(listener.address, credentials = creds)
-client = grpc.Client(service_name, channel)
-
-def call_get_feature():
-    feature = client.GetFeature(
-        request = pb.Point(longitude = 1, latitude = 2),
-    )
-    print("client: GetFeature response message:", feature)
-
-def main(ctx):
-    call_get_feature()
-
-    server.stop()

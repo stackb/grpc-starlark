@@ -1,0 +1,20 @@
+[testdata/thread.grpc.star:4:10] 
+    > thread.name prints the current thread name
+    
+[testdata/thread.grpc.star:7:10] 
+[testdata/thread.grpc.star:9:10] 
+    > thread.sleep pauses the current thread for the given duration
+    
+[testdata/thread.grpc.star:12:10] thread.sleep: <built-in function thread.sleep>
+[testdata/thread.grpc.star:14:10] sleep before: 2019-01-01 00:00:00 +0000 UTC
+[testdata/thread.grpc.star:15:10] sleep after: 2019-01-01 00:00:00.2 +0000 UTC
+[testdata/thread.grpc.star:17:10] 
+    > thread.defer runs a function in a separate thread after a given delay
+    
+[testdata/thread.grpc.star:21:27] defer at 2019-01-01 00:00:00.3 +0000 UTC in thread -thread.defer(100000000):
+[testdata/thread.grpc.star:21:27] defer at 2019-01-01 00:00:00.4 +0000 UTC in thread -thread.defer(100000000):
+[testdata/thread.grpc.star:21:27] defer at 2019-01-01 00:00:00.5 +0000 UTC in thread -thread.defer(100000000):
+[testdata/thread.grpc.star:29:10] 
+    > thread.cancel stops the current thread.  Cancelling the main thread exits the program.
+    
+[testdata/thread.grpc.star:33:10] <built-in function thread.defer.cancel>

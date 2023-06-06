@@ -1,2 +1,0 @@
-=== Example Struct Usage ===
-struct(a = 1, foo = "bar")

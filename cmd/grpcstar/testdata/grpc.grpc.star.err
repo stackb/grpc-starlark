@@ -1,0 +1,2 @@
+[testdata/grpc.grpc.star:2:10] grpc: <module "grpc">
+[testdata/grpc.grpc.star:3:10] dir(grpc): ["Channel", "Client", "Error", "Metadata", "Server", "credentials", "status"]

@@ -33,15 +33,6 @@ func run(wd string, args []string) error {
 		return err
 	}
 
-	// log.SetFlags(log.Flags() &^ (log.Ldate | log.Ltime))
-	// if cfg.logFile != "" {
-	// 	f, err := os.Create(cfg.logFile)
-	// 	if err != nil {
-	// 		return fmt.Errorf("creating log file: %w", err)
-	// 	}
-	// 	log.SetOutput(f)
-	// }
-
 	program, err := program.NewProgram(cfg)
 	if err != nil {
 		return err
