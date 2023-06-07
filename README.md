@@ -26,14 +26,33 @@ go install github.com/stackb/grpc-starlark/cmd/grpcstar@latest
 
 ## Usage
 
-`grpcstar -p <PROTO_DESCRIPTOR_SET> -f <SCRIPT> [KEY=VALUE...]`
+```
+usage: grpcstar [OPTIONS...] [ARGS...]
 
-Example:
+github:
+	https://github.com/stackb/grpc-starlark
 
-```sh
-$ grpcstar \
-    -protoset ./path/to/routeguide/routeguide_proto-descriptor-set.proto.bin \
-    -file ./example/routeguide/routeguide.grpc.star
+options:
+	-h, --help [optional, false]
+		show this help screen
+	-p, --protoset [required]
+		filename name of proto descriptor set
+	-f, --file [required]
+		filename of entrypoint starlark script
+		(conventionally named *.grpc.star)
+	-e, --entrypoint [optional, "main"]
+		name of function in global scope to invoke upon script start
+	-o, --output [optional, "json", onef "json|proto|text|yaml"]
+		formatter for output protobufs returned by entrypoint function
+	-i, --interactive [optional, false]
+		start a REPL session (rather then exec the entrypoint)
+
+example:
+	grpcstar \
+		-p routeguide.pb \
+		-f routeguide.grpc.star \
+		-e call_get_feature \
+		longitude=35.0 latitude=109.1
 ```
 
 ### Proto Descriptor Set
