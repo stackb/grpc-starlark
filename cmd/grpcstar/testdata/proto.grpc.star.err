@@ -1,0 +1,4 @@
+[testdata/proto.grpc.star:2:10] proto: <module "proto">
+[testdata/proto.grpc.star:3:10] proto.package: <built-in function proto.package>
+[testdata/proto.grpc.star:4:10] proto.package('example.routeguide'): <proto.Package "example.routeguide">
+[testdata/proto.grpc.star:7:10] dir(pb): ["Feature", "FeatureDatabase", "Point", "Rectangle", "RouteNote", "RouteSummary"]

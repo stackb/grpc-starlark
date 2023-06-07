@@ -1,0 +1,2 @@
+[testdata/struct.grpc.star:2:10] === Example Struct Usage ===
+[testdata/struct.grpc.star:9:10] struct(a = 1, foo = "bar")

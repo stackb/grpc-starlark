@@ -9,6 +9,7 @@ import (
 	"go.starlark.net/starlark"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/reflect/protoregistry"
@@ -90,7 +91,8 @@ func (c *grpcServer) register(thread *starlark.Thread, fn *starlark.Builtin, arg
 	var handlers *starlark.Dict
 	if err := starlark.UnpackArgs(fn.Name(), args, kwargs,
 		"service", &serviceName,
-		"handlers", &handlers); err != nil {
+		"handlers", &handlers,
+	); err != nil {
 		return nil, err
 	}
 
@@ -233,12 +235,20 @@ func (s *grpcServer) HandleMethod(srv interface{}, ctx context.Context, decode f
 
 func newServer(files *protoregistry.Files) func(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	return func(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-		if err := starlark.UnpackArgs("grpc.Server", args, kwargs); err != nil {
+		var credentials credentials.TransportCredentials
+
+		if err := starlark.UnpackArgs("grpc.Server", args, kwargs,
+			"credentials?", &credentials,
+		); err != nil {
 			return nil, err
+		}
+		var options []grpc.ServerOption
+		if credentials != nil {
+			options = append(options, grpc.Creds(credentials))
 		}
 		value := &grpcServer{
 			files:    files,
-			server:   grpc.NewServer(),
+			server:   grpc.NewServer(options...),
 			handlers: make(map[string]*Handler),
 		}
 		return value, nil

@@ -1,0 +1,15 @@
+[testdata/headers.grpc.star:22:10] server: GetFeature request message: <example.routeguide.Point latitude:2 longitude:1>
+[testdata/headers.grpc.star:23:10] server: GetFeature request headers: [":authority", "content-type", "user-agent", "x-unary-request"]
+[testdata/headers.grpc.star:24:10] server: GetFeature request header content-type: application/grpc
+[testdata/headers.grpc.star:25:10] server: GetFeature request header user-agent: grpc-go/1.35.0
+[testdata/headers.grpc.star:26:10] server: GetFeature request header x-unary-request: ping!
+[testdata/headers.grpc.star:82:10] client: GetFeature response message: <example.routeguide.Feature name:"point (1,2)">
+[testdata/headers.grpc.star:43:10] server: RecordRoute request headers: [":authority", "content-type", "user-agent", "x-streaming-request"]
+[testdata/headers.grpc.star:44:10] server: RecordRoute request header content-type: application/grpc
+[testdata/headers.grpc.star:45:10] server: RecordRoute request header user-agent: grpc-go/1.35.0
+[testdata/headers.grpc.star:46:10] server: RecordRoute request header x-streaming-request: ping!
+[testdata/headers.grpc.star:92:10] client: RecordRoute response message: <example.routeguide.RouteSummary >
+[testdata/headers.grpc.star:95:10] client: RecordRoute response headers: md<[content-type x-streaming-response]>
+[testdata/headers.grpc.star:96:10] client: RecordRoute response header x-streaming-response: pong!
+[testdata/headers.grpc.star:99:10] client: RecordRoute response trailers: ["x-streaming-trailer"]
+[testdata/headers.grpc.star:100:10] client: RecordRoute response trailer x-streaming-trailer: done!

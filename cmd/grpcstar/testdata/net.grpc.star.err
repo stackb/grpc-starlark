@@ -1,0 +1,2 @@
+[testdata/net.grpc.star:2:10] === Example Net Usage ===
+[testdata/net.grpc.star:3:10] net.Listener constructor <built-in function net.Listener>

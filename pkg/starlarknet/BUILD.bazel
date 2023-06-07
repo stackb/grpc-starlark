@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "starlarknet",
@@ -11,15 +11,5 @@ go_library(
     deps = [
         "@net_starlark_go//starlark",
         "@net_starlark_go//starlarkstruct",
-    ],
-)
-
-go_test(
-    name = "starlarknet_test",
-    srcs = ["module_test.go"],
-    embed = [":starlarknet"],
-    deps = [
-        "//pkg/moduletest",
-        "@net_starlark_go//starlark",
     ],
 )

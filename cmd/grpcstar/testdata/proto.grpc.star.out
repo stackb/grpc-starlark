@@ -1,4 +1,0 @@
-proto: <module "proto">
-proto.package: <built-in function proto.package>
-proto.package('example.routeguide'): <proto.Package "example.routeguide">
-dir(pb): ["Feature", "FeatureDatabase", "Point", "Rectangle", "RouteNote", "RouteSummary"]

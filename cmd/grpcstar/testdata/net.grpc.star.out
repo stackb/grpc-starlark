@@ -1,5 +1,0 @@
-=== Example Net Usage ===
-net.Listener constructor <built-in function net.Listener>
-listener instance: <net.Listener tcp 127.0.0.1:1301>
-listener.address: 127.0.0.1:1301
-listener.network: tcp

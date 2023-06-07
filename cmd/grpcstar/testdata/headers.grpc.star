@@ -80,6 +80,7 @@ def call_get_feature():
         },
     )
     print("client: GetFeature response message:", feature)
+    return feature
 
 def call_record_route():
     md = grpc.Metadata()
@@ -97,8 +98,11 @@ def call_record_route():
     trailers = stream.trailer()
     print("client: RecordRoute response trailers:", dir(trailers))
     print("client: RecordRoute response trailer x-streaming-trailer:", getattr(trailers, "x-streaming-trailer", "NOT SET"))
+    return route
 
-call_get_feature()
-call_record_route()
-
-server.stop()
+def main(ctx):
+    messages = []
+    messages.append(call_get_feature())
+    messages.append(call_record_route())
+    server.stop()
+    return messages

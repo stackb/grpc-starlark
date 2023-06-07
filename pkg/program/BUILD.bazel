@@ -1,39 +1,31 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "program",
-    srcs = ["program.go"],
+    srcs = [
+        "config.go",
+        "program.go",
+    ],
     importpath = "github.com/stackb/grpc-starlark/pkg/program",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/protodescriptorset",
+        "//pkg/starlarkcrypto",
         "//pkg/starlarkgrpc",
         "//pkg/starlarknet",
         "//pkg/starlarkos",
         "//pkg/starlarkthread",
+        "@com_github_stripe_skycfg//:skycfg",
         "@com_github_stripe_skycfg//go/protomodule",
-        "@net_starlark_go//lib/proto",
+        "@in_gopkg_yaml_v2//:yaml_v2",
         "@net_starlark_go//lib/time",
+        "@net_starlark_go//repl",
         "@net_starlark_go//starlark",
         "@net_starlark_go//starlarkstruct",
+        "@org_golang_google_protobuf//encoding/protojson",
+        "@org_golang_google_protobuf//encoding/prototext",
+        "@org_golang_google_protobuf//proto",
         "@org_golang_google_protobuf//reflect/protoreflect",
         "@org_golang_google_protobuf//reflect/protoregistry",
-        "@org_golang_google_protobuf//types/dynamicpb",
-    ],
-)
-
-go_test(
-    name = "program_test",
-    srcs = ["program_test.go"],
-    embed = [":program"],
-    embedsrcs = [
-        "routeguide_proto_descriptor.pb",
-        "routeguide.grpc.star",
-    ],
-    deps = [
-        "//pkg/protodescriptorset",
-        "@com_github_google_go_cmp//cmp",
-        "@net_starlark_go//lib/proto",
-        "@net_starlark_go//starlark",
-        "@org_golang_google_protobuf//reflect/protodesc",
     ],
 )

@@ -1,0 +1,2 @@
+[testdata/os.grpc.star:2:10] === Example Os Usage ===
+[testdata/os.grpc.star:3:10] TEST_TARGET: //cmd/grpcstar:grpcstar_test

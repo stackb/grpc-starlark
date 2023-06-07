@@ -6,16 +6,12 @@ load(":platforms.bzl", "platforms")
 go_library(
     name = "grpcstar_lib",
     srcs = [
-        "config.go",
         "grpcstar.go",
     ],
     importpath = "github.com/stackb/grpc-starlark/cmd/grpcstar",
     visibility = ["//visibility:private"],
     deps = [
         "//pkg/program",
-        "//pkg/protodescriptorset",
-        "@net_starlark_go//starlark",
-        "@org_golang_google_protobuf//reflect/protodesc",
     ],
 )
 

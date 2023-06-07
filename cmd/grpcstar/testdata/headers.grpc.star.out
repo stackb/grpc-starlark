@@ -1,15 +1,10 @@
-server: GetFeature request message: <example.routeguide.Point latitude:2 longitude:1>
-server: GetFeature request headers: [":authority", "content-type", "user-agent", "x-unary-request"]
-server: GetFeature request header content-type: application/grpc
-server: GetFeature request header user-agent: grpc-go/1.35.0
-server: GetFeature request header x-unary-request: ping!
-client: GetFeature response message: <example.routeguide.Feature name:"point (1,2)">
-server: RecordRoute request headers: [":authority", "content-type", "user-agent", "x-streaming-request"]
-server: RecordRoute request header content-type: application/grpc
-server: RecordRoute request header user-agent: grpc-go/1.35.0
-server: RecordRoute request header x-streaming-request: ping!
-client: RecordRoute response message: <example.routeguide.RouteSummary >
-client: RecordRoute response headers: md<[content-type x-streaming-response]>
-client: RecordRoute response header x-streaming-response: pong!
-client: RecordRoute response trailers: ["x-streaming-trailer"]
-client: RecordRoute response trailer x-streaming-trailer: done!
+{
+  "name": "point (1,2)",
+  "location": null
+}
+{
+  "point_count": 0,
+  "feature_count": 0,
+  "distance": 0,
+  "elapsed_time": 0
+}
