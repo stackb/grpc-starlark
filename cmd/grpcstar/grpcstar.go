@@ -24,6 +24,9 @@ func run(wd string, args []string) error {
 	if err != nil {
 		return err
 	}
+	if cfg.File == "" {
+		return program.Usage("-file is mandatory")
+	}
 
 	program, err := program.NewProgram(cfg)
 	if err != nil {

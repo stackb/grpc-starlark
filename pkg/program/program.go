@@ -89,6 +89,10 @@ func (p *Program) REPL() {
 }
 
 func newPredeclared(files *protoregistry.Files, types *protoregistry.Types) starlark.StringDict {
+	protoModule := protomodule.NewModule(types)
+	protoModule.Members["encode"] = protoEncode(types)
+	protoModule.Members["decode"] = protoDecode(types)
+
 	return starlark.StringDict{
 		"os":     starlarkos.Module,
 		"net":    starlarknet.Module,
@@ -96,7 +100,7 @@ func newPredeclared(files *protoregistry.Files, types *protoregistry.Types) star
 		"time":   libtime.Module,
 		"crypto": starlarkcrypto.Module,
 		"grpc":   starlarkgrpc.NewModule(files),
-		"proto":  protomodule.NewModule(types),
+		"proto":  protoModule,
 		"struct": starlark.NewBuiltin("struct", starlarkstruct.Make),
 		"module": starlark.NewBuiltin("module", starlarkstruct.MakeModule),
 	}

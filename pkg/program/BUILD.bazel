@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "config.go",
         "program.go",
+        "proto.go",
     ],
     importpath = "github.com/stackb/grpc-starlark/pkg/program",
     visibility = ["//visibility:public"],

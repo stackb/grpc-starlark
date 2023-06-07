@@ -4,30 +4,39 @@ load("//:platforms.bzl", "platforms")
 # gazelle:ignore testdata
 
 go_library(
-    name = "grpcstar_lib",
+    name = "protoc-gen-starlark_lib",
     srcs = [
-        "grpcstar.go",
+        "protoc-gen-starlark.go",
     ],
-    importpath = "github.com/stackb/grpc-starlark/cmd/grpcstar",
+    embedsrcs = ["plugin_descriptor.pb"],
+    importpath = "github.com/stackb/grpc-starlark/cmd/protoc-gen-starlark",
     visibility = ["//visibility:private"],
     deps = [
         "//pkg/program",
+        "//pkg/protodescriptorset",
+        "@com_github_stripe_skycfg//go/protomodule",
+        "@net_starlark_go//starlark",
+        "@org_golang_google_protobuf//proto",
+        "@org_golang_google_protobuf//reflect/protodesc",
+        "@org_golang_google_protobuf//reflect/protoreflect",
+        "@org_golang_google_protobuf//reflect/protoregistry",
+        "@org_golang_google_protobuf//types/pluginpb",
     ],
 )
 
 go_binary(
-    name = "grpcstar",
-    embed = [":grpcstar_lib"],
+    name = "protoc-gen-starlark",
+    embed = [":protoc-gen-starlark_lib"],
     visibility = ["//visibility:public"],
 )
 
 [
     go_binary(
-        name = "grpcstar_%s_%s" % (
+        name = "protoc-gen-starlark_%s_%s" % (
             platform.os,
             platform.arch,
         ),
-        embed = [":grpcstar_lib"],
+        embed = [":protoc-gen-starlark_lib"],
         gc_linkopts = platform.gc_linkopts,
         goarch = platform.arch,
         goos = platform.os,
@@ -40,21 +49,21 @@ go_binary(
 
 [
     genrule(
-        name = "grpcstar_%s_%s_zip" % (
+        name = "protoc-gen-starlark_%s_%s_zip" % (
             platform.os,
             platform.arch,
         ),
-        srcs = ["grpcstar_%s_%s" % (
+        srcs = ["protoc-gen-starlark_%s_%s" % (
             platform.os,
             platform.arch,
         )],
-        outs = ["grpcstar_%s_%s.zip" % (
+        outs = ["protoc-gen-starlark_%s_%s.zip" % (
             platform.os,
             platform.arch,
         )],
         cmd = """
-    cp $(location grpcstar_{os}_{arch}) grpcstar
-    $(location @bazel_tools//tools/zip:zipper) c $@ grpcstar
+    cp $(location protoc-gen-starlark_{os}_{arch}) protoc-gen-starlark
+    $(location @bazel_tools//tools/zip:zipper) c $@ protoc-gen-starlark
     """.format(
             arch = platform.arch,
             os = platform.os,
@@ -66,10 +75,10 @@ go_binary(
 ]
 
 go_test(
-    name = "grpcstar_test",
+    name = "protoc-gen-starlark_test",
     srcs = ["integration_test.go"],
-    data = glob(["testdata/**"]) + ["//example/routeguide:routeguide_proto_descriptor"],
-    embed = [":grpcstar_lib"],
+    data = glob(["testdata/**"]),
+    embed = [":protoc-gen-starlark_lib"],
     deps = [
         "@com_github_google_go_cmp//cmp",
         "@net_starlark_go//lib/time",

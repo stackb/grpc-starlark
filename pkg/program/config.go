@@ -113,10 +113,6 @@ func ParseConfig(args []string) (*Config, error) {
 		cfg.ProtoTypes = protodescriptorset.FileTypes(files)
 	}
 
-	if cfg.File == "" {
-		return nil, Usage("-file is mandatory")
-	}
-
 	switch OutputType(output) {
 	case OutputJson:
 		marshaler := protojson.MarshalOptions{

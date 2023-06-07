@@ -19,6 +19,10 @@ rules:
     implementation: stackb:rules_proto:proto_compile
     visibility:
       -  //visibility:public
+  - name: proto_descriptor_set
+    implementation: stackb:rules_proto:proto_descriptor_set
+    visibility:
+      -  //visibility:public
   - name: proto_go_library
     enabled: true
     implementation: stackb:rules_proto:proto_go_library
@@ -37,6 +41,12 @@ rules:
     visibility:
       -  //visibility:public
 languages:
+  - name: descriptor
+    plugins:
+      - protoc-gen-go
+    rules:
+      - proto_descriptor_set
+    enabled: false
   - name: go
     plugins:
       - protoc-gen-go

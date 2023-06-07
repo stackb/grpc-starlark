@@ -29,12 +29,14 @@ func LoadFileDescriptorSet(filename string) (*descriptorpb.FileDescriptorSet, er
 	if err != nil {
 		return nil, fmt.Errorf("reading protoset file: %w", err)
 	}
+	return Unmarshal(data)
+}
 
+func Unmarshal(data []byte) (*descriptorpb.FileDescriptorSet, error) {
 	var dpb descriptorpb.FileDescriptorSet
 	if err := proto.Unmarshal(data, &dpb); err != nil {
-		return nil, fmt.Errorf("parsing protoset file: %v", err)
+		return nil, fmt.Errorf("unmarshaling protoset file: %v", err)
 	}
-
 	return &dpb, nil
 }
 
