@@ -66,17 +66,22 @@ func TestGoldens(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			stdout := os.Stdout
-			stderr := os.Stderr
-			os.Stdout = outFile
-			os.Stderr = errFile
-			defer func() {
-				os.Stderr = stdout
-				os.Stderr = stderr
-			}()
+
+			var showStdoutNormally = false
+			if !showStdoutNormally {
+				stdout := os.Stdout
+				stderr := os.Stderr
+				os.Stdout = outFile
+				os.Stderr = errFile
+				defer func() {
+					os.Stderr = stdout
+					os.Stderr = stderr
+				}()
+			}
 
 			if err := run(".", []string{
 				"-file=" + filepath.Join("testdata", pair.file),
+				"-o=json",
 			}); err != nil {
 				t.Fatal("run error:", err)
 			}

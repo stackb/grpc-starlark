@@ -20,13 +20,13 @@ import (
 var pluginDescriptor []byte
 
 func main() {
-	if err := run(".", os.Args[1:]); err != nil {
+	if err := run(os.Args[0], os.Args[1:]); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
 
-func run(wd string, args []string) error {
+func run(cmd string, args []string) error {
 	descriptor, err := protodescriptorset.Unmarshal(pluginDescriptor)
 	if err != nil {
 		return err
@@ -45,23 +45,32 @@ func run(wd string, args []string) error {
 		return fmt.Errorf("starlarkifying CodeGeneratorRequest: %w", err)
 	}
 
-	cfg, err := program.ParseConfig(args)
-	if err != nil {
-		return fmt.Errorf("parsing args: %w", err)
-	}
+	cfg := program.NewConfig()
 	cfg.ProtoFiles = files
 	cfg.ProtoTypes = protodescriptorset.FileTypes(files)
 	cfg.OutputType = program.OutputProto
 	cfg.Vars = starlark.StringDict{
 		"request": request,
 	}
+	if err := cfg.ParseArgs(args); err != nil {
+		return fmt.Errorf("parsing args: %w", err)
+	}
 
-	program, err := program.NewProgram(cfg)
+	if cfg.File == "" && fileExists(cmd+".star") {
+		cfg.File = cmd + ".star"
+	}
+
+	pg, err := program.NewProgram(cfg)
 	if err != nil {
 		return err
 	}
 
-	if err := program.Run(); err != nil {
+	msgs, err := pg.Exec()
+	if err != nil {
+		return err
+	}
+
+	if err := pg.Format(msgs); err != nil {
 		return err
 	}
 
@@ -84,4 +93,16 @@ func readRequest(r io.Reader) (*pluginpb.CodeGeneratorRequest, error) {
 	// }
 
 	return req, nil
+}
+
+// fileExists checks if a file exists and is not a directory
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	if info == nil {
+		return false
+	}
+	return !info.IsDir()
 }

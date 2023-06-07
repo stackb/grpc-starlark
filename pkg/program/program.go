@@ -11,6 +11,7 @@ import (
 	"go.starlark.net/repl"
 	"go.starlark.net/starlark"
 	"go.starlark.net/starlarkstruct"
+	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/reflect/protoregistry"
 
 	"github.com/stackb/grpc-starlark/pkg/starlarkcrypto"
@@ -26,6 +27,9 @@ type Program struct {
 }
 
 func NewProgram(cfg *Config) (*Program, error) {
+	if cfg.File == "" {
+		return nil, fmt.Errorf("entrypoint file is required")
+	}
 	skyConfig, err := skycfg.Load(context.Background(), cfg.File,
 		skycfg.WithProtoRegistry(skycfg.NewUnstableProtobufRegistryV2(cfg.ProtoTypes)),
 		skycfg.WithGlobals(newPredeclared(cfg.ProtoFiles, cfg.ProtoTypes)),
@@ -41,23 +45,31 @@ func (p *Program) Run(options ...skycfg.ExecOption) error {
 		p.REPL()
 		return nil
 	}
-	if err := p.Exec(); err != nil {
+	msgs, err := p.Exec()
+	if err != nil {
 		if err, ok := err.(*starlark.EvalError); ok {
 			return fmt.Errorf("%s: %w", err.Backtrace(), err)
 		}
 		return err
 	}
+	if err := p.Format(msgs); err != nil {
+		return err
+	}
 	return nil
 }
 
-func (p *Program) Exec() error {
+func (p *Program) Exec() ([]protoreflect.ProtoMessage, error) {
 	msgs, err := p.skyConfig.Main(context.Background(),
 		skycfg.WithEntryPoint(p.cfg.Entrypoint),
 		skycfg.WithVars(p.cfg.Vars),
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
+	return msgs, nil
+}
+
+func (p *Program) Format(msgs []protoreflect.ProtoMessage) error {
 	var sep string
 	if p.cfg.OutputType == OutputYaml {
 		sep = "---\n"
@@ -67,7 +79,11 @@ func (p *Program) Exec() error {
 		if err != nil {
 			return err
 		}
-		fmt.Printf("%s%s\n", sep, string(data))
+		if p.cfg.OutputType == OutputProto {
+			fmt.Print(data)
+		} else {
+			fmt.Printf("%s%s\n", sep, string(data))
+		}
 	}
 	return nil
 }

@@ -35,43 +35,13 @@ type Config struct {
 	Marshaler   func(m protoreflect.ProtoMessage) ([]byte, error)
 }
 
-func Usage(errMsg string) error {
-	if errMsg != "" {
-		errMsg = fmt.Sprintf("\nerror: %s", errMsg)
+func NewConfig() *Config {
+	return &Config{
+		Vars: make(starlark.StringDict),
 	}
-	return fmt.Errorf(`usage: grpcstar [OPTIONS...] [ARGS...]
-
-github:
-	https://github.com/stackb/grpc-starlark
-
-options:
-	-h, --help [optional, false]
-		show this help screen
-	-p, --protoset [required]
-		filename of proto descriptor set
-	-f, --file [required]
-		filename of entrypoint starlark script
-		(conventionally named *.grpc.star)
-	-e, --entrypoint [optional, "main"]
-		name of function in global scope to invoke upon script start
-	-o, --output [optional, "json", oneof "json|proto|text|yaml"]
-		formatter for output protobufs returned by entrypoint function
-	-i, --interactive [optional, false]
-		start a REPL session (rather then exec the entrypoint)
-
-example:
-	grpcstar \
-		-p routeguide.pb \
-		-f routeguide.grpc.star \
-		-e call_get_feature \
-		longitude=35.0 latitude=109.1
-%s`, errMsg)
 }
 
-func ParseConfig(args []string) (*Config, error) {
-	cfg := new(Config)
-	cfg.Vars = make(starlark.StringDict)
-
+func (cfg *Config) ParseArgs(args []string) error {
 	flags := flag.NewFlagSet("grpcstar", flag.ExitOnError)
 
 	var help bool
@@ -97,17 +67,17 @@ func ParseConfig(args []string) (*Config, error) {
 	flags.BoolVar(&cfg.Interactive, "interactive", false, "interactive mode")
 
 	if err := flags.Parse(args); err != nil {
-		return nil, fmt.Errorf("parsing flags: %w", err)
+		return fmt.Errorf("parsing flags: %w", err)
 	}
 
 	if help {
-		return nil, Usage("")
+		return Usage("")
 	}
 
 	if protosetFile != "" {
 		files, err := protodescriptorset.LoadFiles(protosetFile)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		cfg.ProtoFiles = files
 		cfg.ProtoTypes = protodescriptorset.FileTypes(files)
@@ -144,7 +114,7 @@ func ParseConfig(args []string) (*Config, error) {
 			return yaml.Marshal(yamlMap)
 		}
 	default:
-		return nil, Usage(fmt.Sprintf("invalid flag -o: must be one of (%v|%v|%v|%v)",
+		return Usage(fmt.Sprintf("invalid flag -o: must be one of (%v|%v|%v|%v)",
 			OutputJson,
 			OutputProto,
 			OutputText,
@@ -161,5 +131,38 @@ func ParseConfig(args []string) (*Config, error) {
 		}
 	}
 
-	return cfg, nil
+	return nil
+}
+
+func Usage(errMsg string) error {
+	if errMsg != "" {
+		errMsg = fmt.Sprintf("\nerror: %s", errMsg)
+	}
+	return fmt.Errorf(`usage: grpcstar [OPTIONS...] [ARGS...]
+
+github:
+	https://github.com/stackb/grpc-starlark
+
+options:
+	-h, --help [optional, false]
+		show this help screen
+	-p, --protoset [required]
+		filename of proto descriptor set
+	-f, --file [required]
+		filename of entrypoint starlark script
+		(conventionally named *.grpc.star)
+	-e, --entrypoint [optional, "main"]
+		name of function in global scope to invoke upon script start
+	-o, --output [optional, "json", oneof "json|proto|text|yaml"]
+		formatter for output protobufs returned by entrypoint function
+	-i, --interactive [optional, false]
+		start a REPL session (rather then exec the entrypoint)
+
+example:
+	grpcstar \
+		-p routeguide.pb \
+		-f routeguide.grpc.star \
+		-e call_get_feature \
+		longitude=35.0 latitude=109.1
+%s`, errMsg)
 }

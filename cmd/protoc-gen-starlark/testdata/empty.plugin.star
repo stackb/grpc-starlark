@@ -1,10 +1,10 @@
 pb = proto.package("google.protobuf.compiler")
 
-fakeRequest = pb.CodeGeneratorRequest()
-
 def generate(request):
-    return [pb.CodeGeneratorResponse()]
+    return [pb.CodeGeneratorResponse(
+        error = "Nothing to see here!",
+    )]
 
 def main(ctx):
     # return generate(ctx.vars.request)
-    return generate(fakeRequest)
+    return generate(pb.CodeGeneratorRequest())

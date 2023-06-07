@@ -20,8 +20,8 @@ func main() {
 }
 
 func run(wd string, args []string) error {
-	cfg, err := program.ParseConfig(args)
-	if err != nil {
+	cfg := program.NewConfig()
+	if err := cfg.ParseArgs(args); err != nil {
 		return err
 	}
 	if cfg.File == "" {
