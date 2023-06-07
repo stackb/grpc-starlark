@@ -7,6 +7,7 @@
     <td><img src="https://user-images.githubusercontent.com/50580/141900696-bfb2d42d-5d2c-46f8-bd9f-06515969f6a2.png" height="120"/></td>
     <td><img src="https://avatars2.githubusercontent.com/u/7802525?v=4&s=400" height="120"/></td>
     <td><img src="https://static.vecteezy.com/system/resources/previews/007/038/145/non_2x/nightingale-singing-tune-song-bird-musical-notes-music-concept-icon-in-circle-round-black-color-illustration-flat-style-image-vector.jpg" height="120"/></td>
+    <!-- image credit: https://www.vecteezy.com/vector-art/7038145-nightingale-singing-tune-song-bird-musical-notes-music-concept-icon-in-circle-round-black-color-vector-illustration-flat-style-image -->
   </tr>
   <tr>
     <td>protobuf</td>
@@ -49,7 +50,7 @@ options:
 	-h, --help [optional, false]
 		show this help screen
 	-p, --protoset [required]
-		filename name of proto descriptor set
+		filename of proto descriptor set
 	-f, --file [required]
 		filename of entrypoint starlark script
 		(conventionally named *.grpc.star)

@@ -48,7 +48,7 @@ options:
 	-h, --help [optional, false]
 		show this help screen
 	-p, --protoset [required]
-		filename name of proto descriptor set
+		filename of proto descriptor set
 	-f, --file [required]
 		filename of entrypoint starlark script
 		(conventionally named *.grpc.star)
