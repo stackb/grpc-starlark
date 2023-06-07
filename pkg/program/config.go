@@ -54,7 +54,7 @@ options:
 		(conventionally named *.grpc.star)
 	-e, --entrypoint [optional, "main"]
 		name of function in global scope to invoke upon script start
-	-o, --output [optional, "json", onef "json|proto|text|yaml"]
+	-o, --output [optional, "json", oneof "json|proto|text|yaml"]
 		formatter for output protobufs returned by entrypoint function
 	-i, --interactive [optional, false]
 		start a REPL session (rather then exec the entrypoint)

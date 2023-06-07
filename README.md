@@ -2,11 +2,24 @@
 
 # grpc-starlark
 
-`grpc-starlark` is a library for embedding a gRPC-capable starlark interpreter,
-and a standalone binary `grpcstar` that executes starlark scripts.
+<table border="0">
+  <tr>
+    <td><img src="https://user-images.githubusercontent.com/50580/141900696-bfb2d42d-5d2c-46f8-bd9f-06515969f6a2.png" height="120"/></td>
+    <td><img src="https://avatars2.githubusercontent.com/u/7802525?v=4&s=400" height="120"/></td>
+    <td><img src="https://static.vecteezy.com/system/resources/previews/007/038/145/non_2x/nightingale-singing-tune-song-bird-musical-notes-music-concept-icon-in-circle-round-black-color-illustration-flat-style-image-vector.jpg" height="120"/></td>
+  </tr>
+  <tr>
+    <td>protobuf</td>
+    <td>grpc</td>
+    <td>starlark</td>
+  </tr>
+</table>
 
-The author pronounces this as `grip-ster` (like "napster") but you can say it
-however you like.
+`grpc-starlark` is a:
+- library for embedding a gRPC-capable starlark interpreter,
+- standalone binary `grpcstar` that executes starlark scripts.
+
+> The author pronounces this as `grip-ster` (like "napster", but you can say it however you like).
 
 `grpcstar` use cases include:
 
@@ -42,7 +55,7 @@ options:
 		(conventionally named *.grpc.star)
 	-e, --entrypoint [optional, "main"]
 		name of function in global scope to invoke upon script start
-	-o, --output [optional, "json", onef "json|proto|text|yaml"]
+	-o, --output [optional, "json", oneof "json|proto|text|yaml"]
 		formatter for output protobufs returned by entrypoint function
 	-i, --interactive [optional, false]
 		start a REPL session (rather then exec the entrypoint)
