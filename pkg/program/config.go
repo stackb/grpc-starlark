@@ -119,8 +119,15 @@ func ParseConfig(args []string) (*Config, error) {
 
 	switch OutputType(output) {
 	case OutputJson:
+		marshaler := protojson.MarshalOptions{
+			Multiline:       true,
+			Indent:          "  ",
+			UseProtoNames:   true,
+			UseEnumNumbers:  false,
+			EmitUnpopulated: true,
+		}
 		cfg.OutputType = OutputJson
-		cfg.Marshaler = protojson.Marshal
+		cfg.Marshaler = marshaler.Marshal
 	case OutputProto:
 		cfg.OutputType = OutputProto
 		cfg.Marshaler = proto.Marshal
