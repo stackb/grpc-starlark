@@ -1,10 +1,10 @@
 {
-  "name": "point (1,2)",
-  "location": null
+  "name":  "point (1,2)",
+  "location":  null
 }
 {
-  "point_count": 0,
-  "feature_count": 0,
-  "distance": 0,
-  "elapsed_time": 0
+  "point_count":  0,
+  "feature_count":  0,
+  "distance":  0,
+  "elapsed_time":  0
 }

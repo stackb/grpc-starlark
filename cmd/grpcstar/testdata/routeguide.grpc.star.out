@@ -1,26 +1,26 @@
 {
-  "name": "point (1,2)",
-  "location": null
+  "name":  "point (1,2)",
+  "location":  null
 }
 {
-  "name": "lo (1,2)",
-  "location": null
+  "name":  "lo (1,2)",
+  "location":  null
 }
 {
-  "name": "hi (1,4)",
-  "location": null
+  "name":  "hi (1,4)",
+  "location":  null
 }
 {
-  "point_count": 2,
-  "feature_count": 0,
-  "distance": 2,
-  "elapsed_time": 10
+  "point_count":  2,
+  "feature_count":  0,
+  "distance":  2,
+  "elapsed_time":  10
 }
 {
-  "location": null,
-  "message": "A"
+  "location":  null,
+  "message":  "A"
 }
 {
-  "location": null,
-  "message": "B"
+  "location":  null,
+  "message":  "B"
 }
