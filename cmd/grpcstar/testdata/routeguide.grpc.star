@@ -90,6 +90,7 @@ def call_get_feature():
     point = pb.Point(longitude = 1, latitude = 2)
     feature = client.GetFeature(point)
     print("GetFeature:", feature)
+    return [feature]
 
 def call_list_features():
     rect = pb.Rectangle(
@@ -97,8 +98,11 @@ def call_list_features():
         hi = pb.Point(longitude = 3, latitude = 4),
     )
     stream = client.ListFeatures(rect)
+    features = []
     for response in stream:
+        features.append(response)
         print("ListFeatures:", response)
+    return features
 
 def call_record_route():
     stream = client.RecordRoute()
@@ -107,19 +111,25 @@ def call_record_route():
     stream.close_send()
     response = stream.recv()
     print("RecordRoute:", response)
+    return [response]
 
 def call_route_chat():
     stream = client.RouteChat()
     stream.send(pb.RouteNote(message = "A"))
     stream.send(pb.RouteNote(message = "B"))
     stream.close_send()
+    notes = []
     for response in stream:
+        notes.append(response)
         print("RouteChat:", response)
+    return notes
 
 def main(ctx):
     thread.defer(lambda: server.start(listener))
-    call_get_feature()
-    call_list_features()
-    call_record_route()
-    call_route_chat()
+    messages = []
+    messages += call_get_feature()
+    messages += call_list_features()
+    messages += call_record_route()
+    messages += call_route_chat()
     server.stop()
+    return messages

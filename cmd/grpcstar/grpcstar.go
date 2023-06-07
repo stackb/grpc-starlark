@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/stackb/grpc-starlark/pkg/program"
 )
@@ -17,15 +15,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	// c := make(chan os.Signal, 1)
+	// signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 
 	if err := run(cwd, os.Args[1:]); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 
-	<-c
+	// <-c
 }
 
 func run(wd string, args []string) error {
