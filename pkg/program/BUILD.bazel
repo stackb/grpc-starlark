@@ -15,6 +15,7 @@ go_library(
         "//pkg/starlarkgrpc",
         "//pkg/starlarknet",
         "//pkg/starlarkos",
+        "//pkg/starlarkprocess",
         "//pkg/starlarkthread",
         "@com_github_stripe_skycfg//:skycfg",
         "@com_github_stripe_skycfg//go/protomodule",

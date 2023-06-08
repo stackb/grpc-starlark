@@ -18,6 +18,7 @@ import (
 	"github.com/stackb/grpc-starlark/pkg/starlarkgrpc"
 	"github.com/stackb/grpc-starlark/pkg/starlarknet"
 	"github.com/stackb/grpc-starlark/pkg/starlarkos"
+	"github.com/stackb/grpc-starlark/pkg/starlarkprocess"
 	"github.com/stackb/grpc-starlark/pkg/starlarkthread"
 )
 
@@ -110,14 +111,15 @@ func newPredeclared(files *protoregistry.Files, types *protoregistry.Types) star
 	protoModule.Members["decode"] = protoDecode(types)
 
 	return starlark.StringDict{
-		"os":     starlarkos.Module,
-		"net":    starlarknet.Module,
-		"thread": starlarkthread.Module,
-		"time":   libtime.Module,
-		"crypto": starlarkcrypto.Module,
-		"grpc":   starlarkgrpc.NewModule(files),
-		"proto":  protoModule,
-		"struct": starlark.NewBuiltin("struct", starlarkstruct.Make),
-		"module": starlark.NewBuiltin("module", starlarkstruct.MakeModule),
+		"os":      starlarkos.Module,
+		"net":     starlarknet.Module,
+		"thread":  starlarkthread.Module,
+		"time":    libtime.Module,
+		"crypto":  starlarkcrypto.Module,
+		"grpc":    starlarkgrpc.NewModule(files),
+		"proto":   protoModule,
+		"process": starlarkprocess.Module,
+		"struct":  starlark.NewBuiltin("struct", starlarkstruct.Make),
+		"module":  starlark.NewBuiltin("module", starlarkstruct.MakeModule),
 	}
 }

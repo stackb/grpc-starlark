@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "starlarkprocess",
+    srcs = [
+        "module.go",
+        "process.go",
+    ],
+    importpath = "github.com/stackb/grpc-starlark/pkg/starlarkprocess",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/starlarkutil",
+        "@net_starlark_go//starlark",
+        "@net_starlark_go//starlarkstruct",
+        "@org_golang_google_grpc//metadata",
+    ],
+)
+
+go_test(
+    name = "starlarkprocess_test",
+    srcs = ["module_test.go"],
+    embed = [":starlarkprocess"],
+    deps = [
+        "//pkg/moduletest",
+        "@net_starlark_go//lib/time",
+        "@net_starlark_go//starlark",
+    ],
+)
