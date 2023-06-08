@@ -18,10 +18,11 @@ import (
 type OutputType string
 
 const (
-	OutputJson  OutputType = "json"
-	OutputProto OutputType = "proto"
-	OutputText  OutputType = "text"
-	OutputYaml  OutputType = "yaml"
+	OutputJson       OutputType = "json"
+	OutputStableJson OutputType = "stablejson"
+	OutputProto      OutputType = "proto"
+	OutputText       OutputType = "text"
+	OutputYaml       OutputType = "yaml"
 )
 
 type Config struct {
@@ -60,8 +61,8 @@ func (cfg *Config) ParseArgs(args []string) error {
 	flags.StringVar(&cfg.Entrypoint, "e", "main", "entrypoint function")
 	flags.StringVar(&cfg.Entrypoint, "entrypoint", "main", "entrypoint function")
 
-	flags.StringVar(&output, "o", "json", "output type (optional; one of json|proto|text|yaml)")
-	flags.StringVar(&output, "output", "json", "output type (optional; one of json|proto|text|yaml)")
+	flags.StringVar(&output, "o", "json", "output type (optional; one of json|stablejson|proto|text|yaml)")
+	flags.StringVar(&output, "output", "json", "output type (optional; one of json|stablejson|proto|text|yaml)")
 
 	flags.BoolVar(&cfg.Interactive, "i", false, "interactive mode")
 	flags.BoolVar(&cfg.Interactive, "interactive", false, "interactive mode")
@@ -84,6 +85,14 @@ func (cfg *Config) ParseArgs(args []string) error {
 	}
 
 	switch OutputType(output) {
+	case OutputStableJson:
+		marshaler := protojson.MarshalOptions{
+			EmitUnpopulated: false,
+			Indent:          "",
+			UseProtoNames:   true,
+		}
+		cfg.OutputType = OutputStableJson
+		cfg.Marshaler = marshaler.Marshal
 	case OutputJson:
 		marshaler := protojson.MarshalOptions{
 			Multiline:       true,
@@ -101,9 +110,16 @@ func (cfg *Config) ParseArgs(args []string) error {
 		cfg.OutputType = OutputText
 		cfg.Marshaler = prototext.Marshal
 	case OutputYaml:
+		marshaler := protojson.MarshalOptions{
+			Multiline:       true,
+			Indent:          "  ",
+			UseProtoNames:   true,
+			UseEnumNumbers:  false,
+			EmitUnpopulated: true,
+		}
 		cfg.OutputType = OutputYaml
 		cfg.Marshaler = func(m protoreflect.ProtoMessage) ([]byte, error) {
-			data, err := protojson.Marshal(m)
+			data, err := marshaler.Marshal(m)
 			if err != nil {
 				return nil, err
 			}
@@ -116,6 +132,7 @@ func (cfg *Config) ParseArgs(args []string) error {
 	default:
 		return Usage(fmt.Sprintf("invalid flag -o: must be one of (%v|%v|%v|%v)",
 			OutputJson,
+			OutputStableJson,
 			OutputProto,
 			OutputText,
 			OutputYaml,
@@ -153,10 +170,14 @@ options:
 		(conventionally named *.grpc.star)
 	-e, --entrypoint [optional, "main"]
 		name of function in global scope to invoke upon script start
-	-o, --output [optional, "json", oneof "json|proto|text|yaml"]
+	-o, --output [optional, "json", oneof "json|stablejson|proto|text|yaml"]
 		formatter for output protobufs returned by entrypoint function
 	-i, --interactive [optional, false]
 		start a REPL session (rather then exec the entrypoint)
+
+notes:
+	- stablejson is a compact, whitespace-free JSON rendering.
+	  See https://github.com/golang/protobuf/issues/1082#issuecomment-613080925
 
 example:
 	grpcstar \
