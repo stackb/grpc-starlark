@@ -12,11 +12,6 @@ tidy:
 	bazel run update_go_repositories
 	bazel run gazelle
 
-golden2:
-	bazel run //cmd/protoc-gen-starlark:protoc-gen-starlark_test \
-		-- \
-		--update
-
 golden:
 	bazel run //cmd/grpcstar:grpcstar_test \
 		-- \
