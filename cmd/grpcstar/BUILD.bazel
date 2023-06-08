@@ -1,5 +1,5 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
-load(":platforms.bzl", "platforms")
+load("//:platforms.bzl", "platforms")
 
 # gazelle:ignore testdata
 

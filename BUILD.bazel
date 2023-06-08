@@ -1,4 +1,7 @@
 load("@bazel_gazelle//:def.bzl", "gazelle", "gazelle_binary")
+load("@build_stack_rules_proto//rules:proto_gazelle.bzl", "DEFAULT_LANGUAGES", "proto_gazelle")
+
+exports_files(["rules_proto_config.yaml"])
 
 # -- Gazelle language "walk" ---
 # gazelle:exclude vendor
@@ -23,8 +26,6 @@ load("@bazel_gazelle//:def.bzl", "gazelle", "gazelle_binary")
 # gazelle:proto_language go plugin protoc-gen-go
 # gazelle:proto_language go plugin protoc-gen-go-grpc
 # gazelle:proto_language go rule proto_compile
-
-load("@build_stack_rules_proto//rules:proto_gazelle.bzl", "DEFAULT_LANGUAGES", "proto_gazelle")
 
 gazelle_binary(
     name = "gazelle-protobuf",

@@ -78,6 +78,7 @@ func TestGoldens(t *testing.T) {
 			if err := run(".", []string{
 				"-protoset=../../example/routeguide/routeguide_proto_descriptor.pb",
 				"-file=" + filepath.Join("testdata", pair.file),
+				"-o", "stablejson",
 			}); err != nil {
 				t.Fatal(err)
 			}

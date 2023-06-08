@@ -32,6 +32,10 @@ go_register_toolchains(version = "1.18.2")
 
 register_toolchains("@build_stack_rules_proto//toolchain:standard")
 
+load("//:proto_repositories.bzl", "proto_repositories")
+
+proto_repositories()
+
 # ----------------------------------------------------
 # @build_stack_rules_proto
 # ----------------------------------------------------

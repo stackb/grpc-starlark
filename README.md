@@ -62,7 +62,7 @@ options:
 		start a REPL session (rather then exec the entrypoint)
 
 example:
-	grpcstar \
+	$ grpcstar \
 		-p routeguide.pb \
 		-f routeguide.grpc.star \
 		-e call_get_feature \
