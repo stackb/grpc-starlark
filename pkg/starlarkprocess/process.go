@@ -1,7 +1,7 @@
 package starlarkprocess
 
 import (
-	"os"
+	"bytes"
 	"os/exec"
 	"syscall"
 
@@ -12,21 +12,22 @@ import (
 
 func run(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	var command string
-	var argv starlark.List
-	var env starlark.Dict
-
+	var argv *starlark.List
+	var env *starlark.Dict
+	var stdin starlark.Bytes
 	if err := starlark.UnpackArgs(fn.Name(), args, kwargs,
 		"command", &command,
 		"args?", &argv,
 		"env?", &env,
+		"stdin?", &stdin,
 	); err != nil {
 		return nil, err
 	}
 
-	cmd := exec.Command(command, starlarkListToStringSlice(&argv)...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	// cmd.Dir = "."
+	cmd := exec.Command(command, starlarkListToStringSlice(argv)...)
+	if stdin.Len() > 0 {
+		cmd.Stdin = bytes.NewBuffer([]byte(stdin))
+	}
 
 	var stderr []byte
 	var errMsg string
@@ -45,6 +46,7 @@ func run(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwa
 			// empty string very likely, so we use the default fail code, and
 			// format err to string and set to stderr
 			exitCode = -1
+			errMsg = err.Error()
 		}
 	} else {
 		// success, exitCode should be 0 if go is ok
@@ -55,15 +57,20 @@ func run(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwa
 	return starlarkstruct.FromStringDict(
 		starlarkutil.Symbol(fn.Name()),
 		starlark.StringDict{
-			"exit_code": starlark.MakeInt(exitCode),
+			"command":   starlark.String(command),
+			"args":      args,
 			"error":     starlark.String(errMsg),
-			"stdout":    starlark.String(stdout),
-			"stderr":    starlark.String(stderr),
+			"stdout":    starlark.Bytes(stdout),
+			"stderr":    starlark.Bytes(stderr),
+			"exit_code": starlark.MakeInt(exitCode),
 		},
 	), nil
 }
 
 func starlarkListToStringSlice(list *starlark.List) []string {
+	if list == nil {
+		return []string{}
+	}
 	elems := make([]string, list.Len())
 	for i := 0; i < list.Len(); i++ {
 		elems[i] = list.Index(i).String()

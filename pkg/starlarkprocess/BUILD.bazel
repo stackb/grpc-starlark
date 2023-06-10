@@ -12,7 +12,6 @@ go_library(
         "//pkg/starlarkutil",
         "@net_starlark_go//starlark",
         "@net_starlark_go//starlarkstruct",
-        "@org_golang_google_grpc//metadata",
     ],
 )
 

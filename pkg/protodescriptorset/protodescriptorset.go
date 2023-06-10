@@ -49,6 +49,18 @@ func Parse(data []byte) (*descriptorpb.FileDescriptorSet, error) {
 	return &dpb, nil
 }
 
+func ParseFiles(data []byte) (*protoregistry.Files, error) {
+	descriptor, err := Parse(data)
+	if err != nil {
+		return nil, err
+	}
+	files, err := protodesc.NewFiles(descriptor)
+	if err != nil {
+		return nil, err
+	}
+	return files, nil
+}
+
 func FileTypes(files *protoregistry.Files) *protoregistry.Types {
 	var types protoregistry.Types
 	files.RangeFiles(func(fd protoreflect.FileDescriptor) bool {
@@ -68,4 +80,17 @@ func FileTypes(files *protoregistry.Files) *protoregistry.Types {
 		return true
 	})
 	return &types
+}
+
+func MergeFilesIgnoreConflicts(all ...*protoregistry.Files) *protoregistry.Files {
+	merged := &protoregistry.Files{}
+	for _, files := range all {
+		files.RangeFiles(func(fd protoreflect.FileDescriptor) bool {
+			// RegisterFile only return err due to file or name conflicts.  This
+			// function is about ignoring conflicts, so we can ignore the error.
+			merged.RegisterFile(fd)
+			return true
+		})
+	}
+	return merged
 }

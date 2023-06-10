@@ -11,7 +11,7 @@ import (
 
 func TestThreadModule(t *testing.T) {
 	moduletest.ExprTests(t, starlark.StringDict{
-		"thread": Module,
+		"thread": NewModule(),
 		"time":   libtime.Module,
 	}, []*moduletest.ExprTest{
 		// thread.sleep

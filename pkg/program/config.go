@@ -130,12 +130,14 @@ func (cfg *Config) ParseArgs(args []string) error {
 			return yaml.Marshal(yamlMap)
 		}
 	default:
-		return Usage(fmt.Sprintf("invalid flag -o: must be one of (%v|%v|%v|%v)",
-			OutputJson,
-			OutputStableJson,
-			OutputProto,
-			OutputText,
-			OutputYaml,
+		return Usage(fmt.Sprintf("invalid flag -o: must be one of (%v)",
+			[]OutputType{
+				OutputJson,
+				OutputStableJson,
+				OutputProto,
+				OutputText,
+				OutputYaml,
+			},
 		))
 	}
 

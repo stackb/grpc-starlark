@@ -28,6 +28,7 @@ serve: build
 routeguide_proto_descriptor:
 	bazel build //example/routeguide:routeguide_proto_descriptor
 	cp -f bazel-bin/example/routeguide/routeguide_proto_descriptor.pb pkg/starlarkgrpc/
+	cp -f bazel-bin/example/routeguide/routeguide_proto_descriptor.pb pkg/protodescriptorset/
 
 .PHONY: plugin_proto_descriptor
 plugin_proto_descriptor:

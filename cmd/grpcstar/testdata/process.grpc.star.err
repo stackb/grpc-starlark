@@ -1,0 +1,9 @@
+[testdata/process.grpc.star:2:10] <module "process">
+[testdata/process.grpc.star:3:10] executable: /private/var/tmp/_bazel_pcj/e4140fc3b2d62f69f386763156a76689/execroot/build_stack_grpc_starlark/bazel-out/darwin_arm64-fastbuild/bin/cmd/grpcstar/grpcstar_test_/grpcstar_test.runfiles/build_stack_grpc_starlark/cmd/grpcstar/grpcstar_test_/grpcstar_test
+[testdata/process.grpc.star:4:10] run: <built-in function process.run>
+[testdata/process.grpc.star:10:10] stdout: 
+[testdata/process.grpc.star:11:10] stderr: usage: awk [-F fs] [-v var=value] [-f progfile | 'prog'] [file ...]
+
+[testdata/process.grpc.star:12:10] error: exit status 1
+[testdata/process.grpc.star:13:10] exit_code: 1
+[testdata/process.grpc.star:14:10] process.run(args = (), command = "awk", error = "exit status 1", exit_code = 1, stderr = b"usage: awk [-F fs] [-v var=value] [-f progfile | 'prog'] [file ...]\n", stdout = b"")
