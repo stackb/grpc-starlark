@@ -18,6 +18,7 @@ import (
 	"github.com/stackb/grpc-starlark/pkg/starlarkgrpc"
 	"github.com/stackb/grpc-starlark/pkg/starlarknet"
 	"github.com/stackb/grpc-starlark/pkg/starlarkos"
+	"github.com/stackb/grpc-starlark/pkg/starlarkprocess"
 	"github.com/stackb/grpc-starlark/pkg/starlarkthread"
 )
 
@@ -26,14 +27,18 @@ type Program struct {
 	skyConfig *skycfg.Config
 }
 
-func NewProgram(cfg *Config) (*Program, error) {
+func NewProgram(cfg *Config, loadOptions ...skycfg.LoadOption) (*Program, error) {
 	if cfg.File == "" {
 		return nil, fmt.Errorf("entrypoint file is required")
 	}
-	skyConfig, err := skycfg.Load(context.Background(), cfg.File,
+	loadOptions = append(loadOptions,
 		skycfg.WithProtoRegistry(skycfg.NewUnstableProtobufRegistryV2(cfg.ProtoTypes)),
+	)
+	loadOptions = append(loadOptions,
 		skycfg.WithGlobals(newPredeclared(cfg.ProtoFiles, cfg.ProtoTypes)),
 	)
+
+	skyConfig, err := skycfg.Load(context.Background(), cfg.File, loadOptions...)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +57,7 @@ func (p *Program) Run(options ...skycfg.ExecOption) error {
 		}
 		return err
 	}
-	if err := p.Format(msgs); err != nil {
+	if err := p.Format(msgs...); err != nil {
 		return err
 	}
 	return nil
@@ -69,7 +74,7 @@ func (p *Program) Exec() ([]protoreflect.ProtoMessage, error) {
 	return msgs, nil
 }
 
-func (p *Program) Format(msgs []protoreflect.ProtoMessage) error {
+func (p *Program) Format(msgs ...protoreflect.ProtoMessage) error {
 	var sep string
 	if p.cfg.OutputType == OutputYaml {
 		sep = "---\n"
@@ -80,7 +85,9 @@ func (p *Program) Format(msgs []protoreflect.ProtoMessage) error {
 			return err
 		}
 		if p.cfg.OutputType == OutputProto {
-			fmt.Print(data)
+			if _, err := os.Stdout.Write(data); err != nil {
+				return err
+			}
 		} else {
 			fmt.Printf("%s%s\n", sep, string(data))
 		}
@@ -110,14 +117,15 @@ func newPredeclared(files *protoregistry.Files, types *protoregistry.Types) star
 	protoModule.Members["decode"] = protoDecode(types)
 
 	return starlark.StringDict{
-		"os":     starlarkos.Module,
-		"net":    starlarknet.Module,
-		"thread": starlarkthread.Module,
-		"time":   libtime.Module,
-		"crypto": starlarkcrypto.Module,
-		"grpc":   starlarkgrpc.NewModule(files),
-		"proto":  protoModule,
-		"struct": starlark.NewBuiltin("struct", starlarkstruct.Make),
-		"module": starlark.NewBuiltin("module", starlarkstruct.MakeModule),
+		"os":      starlarkos.Module,
+		"net":     starlarknet.Module,
+		"thread":  starlarkthread.Module,
+		"time":    libtime.Module,
+		"crypto":  starlarkcrypto.Module,
+		"grpc":    starlarkgrpc.NewModule(files),
+		"proto":   protoModule,
+		"process": starlarkprocess.NewModule(),
+		"struct":  starlark.NewBuiltin("struct", starlarkstruct.Make),
+		"module":  starlark.NewBuiltin("module", starlarkstruct.MakeModule),
 	}
 }

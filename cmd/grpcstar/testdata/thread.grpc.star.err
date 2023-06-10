@@ -7,13 +7,12 @@
     
 [testdata/thread.grpc.star:12:10] thread.sleep: <built-in function thread.sleep>
 [testdata/thread.grpc.star:14:10] sleep before: 2019-01-01 00:00:00 +0000 UTC
-[testdata/thread.grpc.star:15:10] sleep after: 2019-01-01 00:00:00.2 +0000 UTC
 [testdata/thread.grpc.star:17:10] 
     > thread.defer runs a function in a separate thread after a given delay
     
-[testdata/thread.grpc.star:23:27] defer callback in thread -thread.defer(150000000):
-[testdata/thread.grpc.star:23:27] defer callback in thread -thread.defer(150000000):
-[testdata/thread.grpc.star:23:27] defer callback in thread -thread.defer(150000000):
+[testdata/thread.grpc.star:23:27] defer callback in thread -thread.defer(10000000):
+[testdata/thread.grpc.star:23:27] defer callback in thread -thread.defer(10000000):
+[testdata/thread.grpc.star:23:27] defer callback in thread -thread.defer(10000000):
 [testdata/thread.grpc.star:31:10] 
     > thread.cancel stops the current thread.  Cancelling the main thread exits the program.
     

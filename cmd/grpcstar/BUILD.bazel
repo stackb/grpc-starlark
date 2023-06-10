@@ -67,7 +67,7 @@ go_binary(
 
 go_test(
     name = "grpcstar_test",
-    srcs = ["integration_test.go"],
+    srcs = ["grpcstar_test.go"],
     data = glob(["testdata/**"]) + ["//example/routeguide:routeguide_proto_descriptor"],
     embed = [":grpcstar_lib"],
     deps = [

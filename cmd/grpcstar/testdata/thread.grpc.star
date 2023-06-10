@@ -10,9 +10,9 @@ def main(ctx):
     > thread.sleep pauses the current thread for the given duration
     """)
     print("thread.sleep:", thread.sleep)
-    thread.sleep(duration = 200 * time.millisecond)
+    thread.sleep(duration = 100 * time.millisecond)
     print("sleep before:", now)
-    print("sleep after:", time.now())
+    # print("sleep after:", time.now())
 
     print("""
     > thread.defer runs a function in a separate thread after a given delay
@@ -21,7 +21,7 @@ def main(ctx):
         # FIXME(pcj): figure out how to make this non-flaky
         # fn = lambda: print("defer at %s in thread %s:" % (time.now(), thread.name())),
         fn = lambda: print("defer callback in thread %s:" % thread.name()),
-        delay = 150 * time.millisecond,
+        delay = 10 * time.millisecond,
         count = 3,
     )
 

@@ -1,0 +1,7 @@
+[testdata/process.grpc.star:2:10] <module "process">
+[testdata/process.grpc.star:4:10] run: <built-in function process.run>
+[testdata/process.grpc.star:8:10] stdout (runfiles dir): /build_stack_grpc_starlark/cmd/grpcstar
+
+[testdata/process.grpc.star:9:10] stderr: 
+[testdata/process.grpc.star:10:10] error: 
+[testdata/process.grpc.star:11:10] exit_code: 0

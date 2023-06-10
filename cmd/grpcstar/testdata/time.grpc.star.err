@@ -1,5 +1,6 @@
 [testdata/time.grpc.star:2:10] === Example Time Usage ===
-[testdata/time.grpc.star:5:10] current time: 2019-01-01 00:00:00.7 +0000 UTC
-[testdata/time.grpc.star:6:10] time add: 2019-01-01 00:00:05.7 +0000 UTC
+[testdata/time.grpc.star:6:10] time then: 2019-01-01 00:00:05.6 +0000 UTC
 [testdata/time.grpc.star:7:10] time hours: 0
-[testdata/time.grpc.star:8:10] additional details: https://github.com/google/starlark-go/blob/a134d8f9ddca7469c736775b67544671f0a135ad/starlark/testdata/time.star
+[testdata/time.grpc.star:8:10] time minute: 0
+[testdata/time.grpc.star:9:10] time second: 5
+[testdata/time.grpc.star:10:10] additional details: https://github.com/google/starlark-go/blob/a134d8f9ddca7469c736775b67544671f0a135ad/starlark/testdata/time.star

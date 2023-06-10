@@ -1,6 +1,20 @@
-{"name":"point (1,2)"}
-{"name":"lo (1,2)"}
-{"name":"hi (1,4)"}
-{"point_count":2, "distance":2, "elapsed_time":10}
-{"message":"A"}
-{"message":"B"}
+{
+ "name": "point (1,2)"
+}
+{
+ "name": "lo (1,2)"
+}
+{
+ "name": "hi (1,4)"
+}
+{
+ "point_count": 2,
+ "distance": 2,
+ "elapsed_time": 10
+}
+{
+ "message": "A"
+}
+{
+ "message": "B"
+}

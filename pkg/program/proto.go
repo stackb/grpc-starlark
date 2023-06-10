@@ -22,7 +22,7 @@ func protoDecode(registry *protoregistry.Types) starlark.Callable {
 		kwargs []starlark.Tuple,
 	) (starlark.Value, error) {
 		var msgType starlark.Value
-		var value starlark.String
+		var value starlark.Bytes
 		if err := starlark.UnpackPositionalArgs(fn.Name(), args, kwargs, 2, &msgType, &value); err != nil {
 			return nil, err
 		}
@@ -66,10 +66,11 @@ func protoEncode(registry *protoregistry.Types) starlark.Callable {
 			}
 		}
 
-		jsonData, err := marshal.Marshal(msg)
+		data, err := marshal.Marshal(msg)
 		if err != nil {
 			return nil, err
 		}
-		return starlark.String(jsonData), nil
+
+		return starlark.Bytes(data), nil
 	})
 }
