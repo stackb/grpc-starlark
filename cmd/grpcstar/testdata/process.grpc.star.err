@@ -1,8 +1,38 @@
 [testdata/process.grpc.star:2:10] <module "process">
 [testdata/process.grpc.star:4:10] run: <built-in function process.run>
-[testdata/process.grpc.star:9:10] stdout: 
-[testdata/process.grpc.star:10:10] stderr: usage: awk [-F fs] [-v var=value] [-f progfile | 'prog'] [file ...]
+[testdata/process.grpc.star:8:10] stdout: globals.grpc.star.stderr
+globals.grpc.star.stdout
+grpc.Channel.grpc.star.stderr
+grpc.Channel.grpc.star.stdout
+grpc.grpc.star.stderr
+grpc.grpc.star.stdout
+grpc.status.grpc.star.stderr
+grpc.status.grpc.star.stdout
+grpcstar_test_
+headers.grpc.star.stderr
+headers.grpc.star.stdout
+module.grpc.star.stderr
+module.grpc.star.stdout
+net.grpc.star.stderr
+net.grpc.star.stdout
+os.grpc.star.stderr
+os.grpc.star.stdout
+process.grpc.star.stderr
+process.grpc.star.stdout
+proto.grpc.star.stderr
+proto.grpc.star.stdout
+routeguide.grpc.star.stderr
+routeguide.grpc.star.stdout
+struct.grpc.star.stderr
+struct.grpc.star.stdout
+testdata
+thread.grpc.star.stderr
+thread.grpc.star.stdout
+time.grpc.star.stderr
+time.grpc.star.stdout
+tls.grpc.star.stderr
+tls.grpc.star.stdout
 
-[testdata/process.grpc.star:11:10] error: exit status 1
-[testdata/process.grpc.star:12:10] exit_code: 1
-[testdata/process.grpc.star:13:10] process.run(args = (), command = "awk", error = "exit status 1", exit_code = 1, stderr = b"usage: awk [-F fs] [-v var=value] [-f progfile | 'prog'] [file ...]\n", stdout = b"")
+[testdata/process.grpc.star:9:10] stderr: 
+[testdata/process.grpc.star:10:10] error: 
+[testdata/process.grpc.star:11:10] exit_code: 0

@@ -2,8 +2,10 @@ package starlarkprocess
 
 import (
 	"bytes"
+	"context"
 	"os/exec"
 	"syscall"
+	"time"
 
 	"github.com/stackb/grpc-starlark/pkg/starlarkutil"
 	"go.starlark.net/starlark"
@@ -24,7 +26,8 @@ func run(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwa
 		return nil, err
 	}
 
-	cmd := exec.Command(command, starlarkListToStringSlice(argv)...)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	cmd := exec.CommandContext(ctx, command, starlarkListToStringSlice(argv)...)
 	if stdin.Len() > 0 {
 		cmd.Stdin = bytes.NewBuffer([]byte(stdin))
 	}
@@ -32,6 +35,7 @@ func run(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwa
 	var stderr []byte
 	var errMsg string
 	stdout, err := cmd.Output()
+	cancel()
 	var exitCode int
 	if err != nil {
 		// try to get the exit code

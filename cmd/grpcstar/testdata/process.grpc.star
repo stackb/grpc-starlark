@@ -3,11 +3,9 @@ def main(ctx):
 
     print("run:", process.run)
     result = process.run(
-        command = "awk",
-        # args = ["--help", "all"],
+        command = "ls",
     )
     print("stdout:", result.stdout)
     print("stderr:", result.stderr)
     print("error:", result.error)
     print("exit_code:", result.exit_code)
-    print(result)

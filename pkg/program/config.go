@@ -88,7 +88,7 @@ func (cfg *Config) ParseArgs(args []string) error {
 	case OutputStableJson:
 		marshaler := protojson.MarshalOptions{
 			EmitUnpopulated: false,
-			Indent:          "",
+			Indent:          " ",
 			UseProtoNames:   true,
 		}
 		cfg.OutputType = OutputStableJson
