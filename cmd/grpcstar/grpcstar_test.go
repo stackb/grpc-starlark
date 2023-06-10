@@ -4,6 +4,7 @@ import (
 	"flag"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -93,6 +94,7 @@ func TestGoldens(t *testing.T) {
 			if err != nil {
 				t.Fatal("reading err file:", err)
 			}
+			gotErr = derandPrototext(t, gotErr)
 
 			if *update {
 				if workspaceDir == "" {
@@ -125,4 +127,12 @@ func TestGoldens(t *testing.T) {
 			}
 		})
 	}
+}
+
+func derandPrototext(t *testing.T, data []byte) []byte {
+	in := string(data)
+	re := regexp.MustCompile(`\s{2}([a-z]+):`)
+	out := re.ReplaceAllString(in, " $1:")
+	out = re.ReplaceAllString(out, " $1:")
+	return []byte(out)
 }
