@@ -1,8 +1,7 @@
 def main(ctx):
     print(process)
-    print("executable:", process.executable)
-    print("run:", process.run)
 
+    print("run:", process.run)
     result = process.run(
         command = "awk",
         # args = ["--help", "all"],
