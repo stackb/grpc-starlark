@@ -141,9 +141,8 @@ def go_repositories():
         name = "com_github_stripe_skycfg",
         build_file_proto_mode = "disable_global",
         importpath = "github.com/stripe/skycfg",
-        replace = "github.com/stackb/skycfg",
-        sum = "h1:i4qwCA7N4tMJeRNvyLVpo4V0f6PTSn+Ulrw2pAB+0mI=",
-        version = "v0.0.0-20230610002248-c9340b962735",
+        sum = "h1:wfTJAQetWn3yCYns3tOXW0on2UN0/1CwpbRewIlZlxs=",
+        version = "v0.1.1",
     )
     go_repository(
         name = "com_google_cloud_go",
