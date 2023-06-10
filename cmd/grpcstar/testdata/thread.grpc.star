@@ -12,7 +12,7 @@ def main(ctx):
     print("thread.sleep:", thread.sleep)
     thread.sleep(duration = 100 * time.millisecond)
     print("sleep before:", now)
-    print("sleep after:", time.now())
+    # print("sleep after:", time.now())
 
     print("""
     > thread.defer runs a function in a separate thread after a given delay

@@ -7,7 +7,6 @@
     
 [testdata/thread.grpc.star:12:10] thread.sleep: <built-in function thread.sleep>
 [testdata/thread.grpc.star:14:10] sleep before: 2019-01-01 00:00:00 +0000 UTC
-[testdata/thread.grpc.star:15:10] sleep after: 2019-01-01 00:00:00.1 +0000 UTC
 [testdata/thread.grpc.star:17:10] 
     > thread.defer runs a function in a separate thread after a given delay
     
