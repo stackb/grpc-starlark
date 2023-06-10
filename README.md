@@ -311,3 +311,10 @@ The `net` module contains network-related functions.
 - `net.Listener` constructs a new listener via the
   [net.Listen](https://pkg.go.dev/net#Listen) func.
 
+
+## process
+
+The `process` module contains subprocess-related functions.
+
+- `process.run` runs a subprocess.
+
