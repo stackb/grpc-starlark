@@ -15,7 +15,6 @@ proto_descriptor_set(
 
 grpcstar_binary(
     name = "server",
-    descriptor = ":routeguide_proto_descriptor",
-    importpath = "github.com/stackb/grpc-starlark/example/routeguide/server",
+    descriptor = ":routeguide_proto",
     main = "routeguide.main.star",
 )
