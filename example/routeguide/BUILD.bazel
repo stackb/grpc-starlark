@@ -10,17 +10,11 @@ proto_library(
 proto_descriptor_set(
     name = "routeguide_proto_descriptor",
     visibility = ["//visibility:public"],
-    deps = [
-        "routeguide_proto",
-    ],
+    deps = ["routeguide_proto"],
 )
 
 grpcstar_binary(
     name = "server",
-    # srcs = [
-    #     "handlers.star",
-    #     "helper.star",
-    # ],
     descriptor = ":routeguide_proto_descriptor",
     importpath = "github.com/stackb/grpc-starlark/example/routeguide/server",
     main = "routeguide.main.star",
