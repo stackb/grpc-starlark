@@ -77,7 +77,7 @@ See [bazel rule documentation](rules/).
 
 ## Docker Usage
 
-An image is pushed to <ghcr.io/stackb/grpc-starlark/grpcstar> during the release
+An image is pushed to [ghcr.io/stackb/grpc-starlark/grpcstar](https://github.com/orgs/stackb/packages/container/package/grpc-starlark%2Fgrpcstar) during the release
 workflow.  It consists of small base layer and the `grpcstar` binary at the root
 of the container with the `Entrypoint` to set `/grpcstar`.
 
