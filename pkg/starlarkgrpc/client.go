@@ -124,10 +124,13 @@ func newClientUnaryCall(method string, methodDescriptor protoreflect.MethodDescr
 		var callOptions []grpc.CallOption
 
 		if md, ok := metadataFromValue(metadataValue); ok {
-			ctx = metadata.NewOutgoingContext(ctx, metadata.MD(md))
+			for k, v := range md {
+				ctx = metadata.AppendToOutgoingContext(ctx, k, v[0])
+			}
 		}
 
 		response := dynamicpb.NewMessage(methodDescriptor.Output())
+
 		if err := conn.Invoke(ctx, method, request, response, callOptions...); err != nil {
 			return nil, err
 		}
