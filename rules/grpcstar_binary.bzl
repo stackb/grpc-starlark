@@ -13,10 +13,6 @@ def _grpcstar_entrypoint_impl(ctx):
     )
     return [DefaultInfo(
         files = depset([ctx.outputs.go]),
-        runfiles = None,
-        data_runfiles = None,
-        default_runfiles = None,
-        executable = None,
     )]
 
 _grpcstar_entrypoint = rule(
@@ -55,8 +51,10 @@ def grpcstar_binary(**kwargs):
         None
     """
     name = kwargs.pop("name")
-    mainname = name + "_main"
+    goname = name + "_main"
     libname = name + "_lib"
+    starname = name + "_star"
+    dname = name + "_descriptor"
 
     scripts = kwargs.pop("scripts", [])
     srcs = kwargs.pop("srcs", [])
@@ -73,21 +71,35 @@ def grpcstar_binary(**kwargs):
     if not main:
         fail("grpcstar_binary.main is required")
 
+    native.genrule(
+        name = starname,
+        srcs = [main],
+        outs = [name + ".star"],
+        cmd = "cp $< $@",
+    )
+
+    native.genrule(
+        name = dname,
+        srcs = [descriptor],
+        outs = [name + ".descriptor"],
+        cmd = "cp $< $@",
+    )
+
     _grpcstar_entrypoint(
-        name = mainname,
-        main = main,
-        descriptor = descriptor,
+        name = goname,
+        main = starname,
+        descriptor = dname,
     )
 
     go_library(
         name = libname,
-        srcs = srcs + [mainname],
+        srcs = srcs + [goname],
         importpath = importpath,
-        embedsrcs = [main, descriptor] + scripts,
+        embedsrcs = [starname, dname] + scripts,
         visibility = visibility,
         deps = deps + [
-            "//pkg/program",
-            "//pkg/protodescriptorset",
+            str(Label("//pkg/program")),
+            str(Label("//pkg/protodescriptorset")),
         ],
     )
 
