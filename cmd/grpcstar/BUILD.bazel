@@ -18,6 +18,8 @@ go_library(
 go_binary(
     name = "grpcstar",
     embed = [":grpcstar_lib"],
+    pure = "on",
+    static = "on",
     visibility = ["//visibility:public"],
 )
 

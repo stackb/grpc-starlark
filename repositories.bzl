@@ -15,6 +15,8 @@ def repositories():
     bazel_gazelle()  # via <TOP>
     build_stack_rules_proto()
     protobuf_core_deps()
+    io_bazel_rules_docker()
+    hermetic_cc_toolchain()
 
 def protobuf_core_deps():
     bazel_skylib()  # via com_google_protobuf
@@ -138,4 +140,50 @@ def com_google_protobuf():
         urls = [
             "https://github.com/protocolbuffers/protobuf/archive/v3.14.0.tar.gz",
         ],
+    )
+
+def io_bazel_rules_docker():
+    # Branch: master
+    # Commit: 8e70c6bcb584a15a8fd061ea489b933c0ff344ca
+    # Date: 2023-04-27 20:06:36 +0000 UTC
+    # URL: https://github.com/bazelbuild/rules_docker/commit/8e70c6bcb584a15a8fd061ea489b933c0ff344ca
+    #
+    # The OCI distribution spec only allows lower case letter in container repository (#2252)
+    #
+    # name
+    # (https://github.com/opencontainers/distribution-spec/blob/main/spec.md#pulling-manifests),
+    # this doesn't bode well with Bazel package path using upper case.
+    #
+    # To be clear: docker itself is ok with upper case:
+    # https://ktomk.github.io/pipelines/doc/DOCKER-NAME-TAG.html.
+    #
+    # Picking the common denominator here, and force lower case on pkg path.
+    # Size: 601209 (601 kB)
+    _maybe(
+        http_archive,
+        name = "io_bazel_rules_docker",
+        sha256 = "c27b53d53a5704fb676078843f1a674ff196ab4fb9d7f6b74cf7748b47c9374f",
+        strip_prefix = "rules_docker-8e70c6bcb584a15a8fd061ea489b933c0ff344ca",
+        urls = ["https://github.com/bazelbuild/rules_docker/archive/8e70c6bcb584a15a8fd061ea489b933c0ff344ca.tar.gz"],
+    )
+
+def hermetic_cc_toolchain():
+    # Commit: a9d87b21a5dddd691336c6c0004fa5dcfe5b9b48
+    # Date: 2023-06-05 07:01:43 +0000 UTC
+    # URL: https://github.com/uber/hermetic_cc_toolchain/commit/a9d87b21a5dddd691336c6c0004fa5dcfe5b9b48
+    #
+    # UBSAN: strip paths
+    #
+    # When a sanitizer (say, UBSAN via `-fsanitize=undefined`) is turned on, `zig cc` will include absolute paths to some header files, making the artifacts non-reproducible.
+    #
+    # This commit strips dirnames from such header files.
+    #
+    # Signed-off-by: Motiejus Jakštys <motiejus@uber.com>
+    # Size: 45271 (45 kB)
+    _maybe(
+        http_archive,
+        name = "hermetic_cc_toolchain",
+        sha256 = "92f42183aaaa4c05610f4a6b37e30d54bd52020ec34144fbc2a5cabc02656612",
+        strip_prefix = "hermetic_cc_toolchain-a9d87b21a5dddd691336c6c0004fa5dcfe5b9b48",
+        urls = ["https://github.com/uber/hermetic_cc_toolchain/archive/a9d87b21a5dddd691336c6c0004fa5dcfe5b9b48.tar.gz"],
     )
