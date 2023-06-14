@@ -16,4 +16,3 @@ build:freebsd   --host_cxxopt='-std=c++14'
 build --incompatible_enable_cc_toolchain_resolution
 build --protocopt=--experimental_allow_proto3_optional
 build --client_env=CC=clang
-

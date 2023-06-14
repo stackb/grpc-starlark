@@ -1,0 +1,18 @@
+load("@io_bazel_rules_docker//container:push.bzl", "container_push")
+load("@io_bazel_rules_docker//container:image.bzl", "container_image")
+
+container_image(
+    name = "image",
+    base = "@go_image_base//image",
+    entrypoint = ["/grpcstar"],
+    files = ["//cmd/grpcstar"],
+)
+
+container_push(
+    name = "push",
+    format = "Docker",
+    image = ":image",
+    registry = "ghcr.io/stackb",
+    repository = "grpc-starlark/grpcstar",
+    tag_file = "RELEASE_TAG",
+)

@@ -68,12 +68,3 @@ def grpcstar_image(**kwargs):
         ],
         **kwargs
     )
-
-    # container_push(
-    #     name = "push",
-    #     format = "Docker",
-    #     image = ":image",
-    #     registry = "us.gcr.io/bzlio-260121",
-    #     repository = "bezel/robinhood",
-    #     tag = "latest",
-    # )
