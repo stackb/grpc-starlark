@@ -28,6 +28,8 @@
 - stand-in for `postman`
 - testing gRPC backends
 - mocking gRPC backends in integration tests
+- gRPC microservices with things like [Google Cloud
+  Run](https://cloud.google.com/run/docs/triggering/grpc) 
 
 ## Installation
 
@@ -71,7 +73,22 @@ example:
 
 ## Bazel Usage
 
-See [bazel rule documentation](rules/)
+See [bazel rule documentation](rules/).
+
+## Docker Usage
+
+An image is pushed to <ghcr.io/stackb/grpc-starlark/grpcstar> during the release
+workflow.  It consists of small base layer and the `grpcstar` binary at the root
+of the container with the `Entrypoint` to set `/grpcstar`.
+
+```dockerfile
+FROM ghcr.io/stackb/grpc-starlark/grpcstar:v0.6.0
+
+COPY service.descriptor.pb /
+COPY server.grpc.star /
+
+CMD --protoset /service.descriptor.pb --file /server.grpc.star
+```
 
 ### Proto Descriptor Set
 
