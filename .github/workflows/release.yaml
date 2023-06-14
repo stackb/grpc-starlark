@@ -82,7 +82,6 @@ jobs:
 
       - name: Push Docker image
         env:
-        env:
           XDG_CACHE_HOME: ~/.cache/bazel-repo
           RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
         run: >-
