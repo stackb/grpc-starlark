@@ -3,6 +3,32 @@
 The `@build_stack_grpc_starlark//rules:` package contains custom bazel rules for
 working with grpc-starlark.
 
+## `WORKSPACE`
+
+In order to consume grpc-starlark in a bazel workspace, use something like:
+
+```py
+# Release: v0.6.0
+# TargetCommitish: master
+# Date: 2023-06-14 14:56:20 +0000 UTC
+# URL: https://github.com/stackb/grpc-starlark/releases/tag/v0.6.0
+# Size: 89768 (90 kB)
+http_archive(
+    name = "build_stack_grpc_starlark",
+    sha256 = "e0e4310c4b968277f68f99206d38b0fb3c3aff36fae8a8a8daab9d422d88dc50",
+    strip_prefix = "grpc-starlark-0.6.0",
+    urls = ["https://github.com/stackb/grpc-starlark/archive/v0.6.0.tar.gz"],
+)
+```
+
+If you need the go_dependencies, use something like:
+
+```py
+load("@build_stack_grpc_starlark//:go_repositories.bzl", build_stack_grpc_starlark_go_repositories = "go_repositories")
+
+build_stack_grpc_starlark_go_repositories()
+```
+
 ## `grpcstar_binary`
 
 The `grpcstar_binary` generates a standalone binary with the descriptor and
@@ -35,7 +61,7 @@ grpcstar_binary(
 
 > This information is not necessary for using the rule but helps explain how it works.
 
-```sh
+```
 $ bazel query '//example/routeguide:*' --output label_kind
 source file //example/routeguide:routeguide.proto          # source file: input for proto_library.srcs
 proto_library rule //example/routeguide:routeguide_proto   # generates: the compiled descriptor.pb, for genrule

@@ -69,6 +69,10 @@ example:
 		longitude=35.0 latitude=109.1
 ```
 
+## Bazel Usage
+
+See [bazel rule documentation](rules/)
+
 ### Proto Descriptor Set
 
 grpcstar requires a precompiled proto descriptor set via the `--protoset` (`-p`)
