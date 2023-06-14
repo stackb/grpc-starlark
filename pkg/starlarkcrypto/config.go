@@ -29,14 +29,19 @@ func newTlsConfig(thread *starlark.Thread, fn *starlark.Builtin, args starlark.T
 		return nil, err
 	}
 
-	certs := make([]tls.Certificate, certificates.Len())
-	for i := 0; i < certificates.Len(); i++ {
-		value := certificates.Index(i)
-		if cert, ok := value.(certificate); ok {
-			certs = append(certs, *cert.Certificate)
-		} else {
-			return nil, fmt.Errorf("certificate list entry %d must be a tls.Certificate (got %T)", i, value)
+	var certs []tls.Certificate
+	if certificates != nil {
+		certs := make([]tls.Certificate, certificates.Len())
+		for i := 0; i < certificates.Len(); i++ {
+			value := certificates.Index(i)
+			if cert, ok := value.(certificate); ok {
+				certs = append(certs, *cert.Certificate)
+			} else {
+				return nil, fmt.Errorf("certificate list entry %d must be a tls.Certificate (got %T)", i, value)
+			}
 		}
+	} else {
+		certificates = starlark.NewList(nil)
 	}
 
 	var rootCas *x509.CertPool

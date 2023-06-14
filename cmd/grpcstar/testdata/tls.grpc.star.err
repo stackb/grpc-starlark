@@ -1,6 +1,0 @@
-[testdata/tls.grpc.star:245:6] certificate: <module "tls.Certificate">
-[testdata/tls.grpc.star:249:6] root_cas: x509.CertPool(add = <built-in function add>, append = <built-in function append>)
-[testdata/tls.grpc.star:257:6] config: tls.Config(certificates = [<module "tls.Certificate">], insecure_skip_verify = True)
-[testdata/tls.grpc.star:259:6] insecure transport credentials: grpc.credentials.Insecure()
-[testdata/tls.grpc.star:261:6] secure transport credentials: grpc.credentials.Tls(config = tls.Config(certificates = [<module "tls.Certificate">], insecure_skip_verify = True))
-[testdata/tls.grpc.star:293:10] client: GetFeature response message: <example.routeguide.Feature name:"point (1,2)">

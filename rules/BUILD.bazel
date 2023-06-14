@@ -1,0 +1,1 @@
+exports_files(["grpcstar_binary.go.tmpl"])

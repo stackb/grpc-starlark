@@ -1,4 +1,5 @@
 load("@rules_proto//proto:defs.bzl", "proto_descriptor_set", "proto_library")
+load("@build_stack_grpc_starlark//rules:grpcstar_binary.bzl", "grpcstar_binary")
 
 proto_library(
     name = "routeguide_proto",
@@ -10,4 +11,11 @@ proto_descriptor_set(
     name = "routeguide_proto_descriptor",
     visibility = ["//visibility:public"],
     deps = ["routeguide_proto"],
+)
+
+grpcstar_binary(
+    name = "server",
+    descriptor = ":routeguide_proto_descriptor",
+    importpath = "github.com/stackb/grpc-starlark/example/routeguide/server",
+    main = "routeguide.main.star",
 )

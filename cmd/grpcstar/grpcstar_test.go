@@ -75,7 +75,6 @@ func TestGoldens(t *testing.T) {
 				os.Stderr = stdout
 				os.Stderr = stderr
 			}()
-
 			if err := run(".", []string{
 				"-protoset=../../example/routeguide/routeguide_proto_descriptor.pb",
 				"-file=" + filepath.Join("testdata", pair.file),
