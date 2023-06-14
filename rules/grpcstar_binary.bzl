@@ -74,14 +74,14 @@ def grpcstar_binary(**kwargs):
     native.genrule(
         name = starname,
         srcs = [main],
-        outs = [name + ".star"],
+        outs = [name + ".star_"],
         cmd = "cp $< $@",
     )
 
     native.genrule(
         name = dname,
         srcs = [descriptor],
-        outs = [name + ".descriptor"],
+        outs = [name + ".descriptor_"],
         cmd = "cp $< $@",
     )
 
