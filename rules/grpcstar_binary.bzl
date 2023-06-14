@@ -63,7 +63,7 @@ def grpcstar_binary(**kwargs):
 
     importpath = kwargs.pop("importpath", "")
     if not importpath:
-        fail("grpcstar_binary.importpath is required")
+        importpath = native.package_name() + "/" + name
     descriptor = kwargs.pop("descriptor", "")
     if not descriptor:
         fail("grpcstar_binary.descriptor is required")
