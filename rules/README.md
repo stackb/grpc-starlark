@@ -21,13 +21,27 @@ http_archive(
 )
 ```
 
-If you need the go_dependencies, use something like:
+If you need the go dependencies, use something like:
 
 ```py
 load("@build_stack_grpc_starlark//:go_repositories.bzl", build_stack_grpc_starlark_go_repositories = "go_repositories")
 
 build_stack_grpc_starlark_go_repositories()
 ```
+
+> Not required if you have a workspace that is using go imports from
+> grpc-starlark and they are already in your `go.mod` file, and you have a
+> workflow like `gazelle update-repos`.
+
+If you need base dependencies (rules_go, etc), use something like:
+
+```py
+load("@build_stack_grpc_starlark//:repositories.bzl", build_stack_grpc_starlark_repositories = "repositories")
+
+build_stack_grpc_starlark_repositories()
+```
+
+> Not required if you already have a workspace using rules_go.
 
 ## `grpcstar_binary`
 
