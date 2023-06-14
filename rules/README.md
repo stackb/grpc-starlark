@@ -21,12 +21,20 @@ http_archive(
 )
 ```
 
-If you need the go_dependencies, use something like:
+If you need the go dependencies, use something like:
 
 ```py
 load("@build_stack_grpc_starlark//:go_repositories.bzl", build_stack_grpc_starlark_go_repositories = "go_repositories")
 
 build_stack_grpc_starlark_go_repositories()
+```
+
+If you need base dependencies (rules_go, etc), use something like:
+
+```py
+load("@build_stack_grpc_starlark//:repositories.bzl", build_stack_grpc_starlark_repositories = "repositories")
+
+build_stack_grpc_starlark_repositories()
 ```
 
 ## `grpcstar_binary`
