@@ -8,6 +8,10 @@ on:
     tags:
       - "v*.*.*"
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -43,6 +47,7 @@ jobs:
           --bazelrc=.bazelrc
           build
           //cmd/grpcstar:all
+          //cmd/grpcstar/container:image
 
       - name: Prepare release assets
         env:
@@ -67,3 +72,23 @@ jobs:
             grpcstar_linux_amd64.${{ env.RELEASE_VERSION }}.zip
             grpcstar_linux_arm64.${{ env.RELEASE_VERSION }}.zip
             grpcstar_windows_amd64.${{ env.RELEASE_VERSION }}.zip
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push Docker image
+        env:
+        env:
+          XDG_CACHE_HOME: ~/.cache/bazel-repo
+          RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
+        run: >-
+          echo "${RELEASE_VERSION}" > cmd/grpcstar/container/RELEASE_TAG &&
+          bazel
+          --bazelrc=.github/workflows/ci.bazelrc
+          --bazelrc=.bazelrc
+          run
+          //cmd/grpcstar/container:push

@@ -5,6 +5,26 @@ load("//:repositories.bzl", "repositories")
 repositories()
 
 # ----------------------------------------------------
+# @hermetic_cc_toolchain (zig)
+# ----------------------------------------------------
+
+load("@hermetic_cc_toolchain//toolchain:defs.bzl", zig_toolchains = "toolchains")
+
+# Plain zig_toolchains() will pick reasonable defaults. See
+# toolchain/defs.bzl:toolchains on how to change the Zig SDK version and
+# download URL.
+zig_toolchains()
+
+register_toolchains(
+    "@zig_sdk//toolchain:linux_amd64_gnu.2.28",
+    "@zig_sdk//toolchain:linux_arm64_gnu.2.28",
+    "@zig_sdk//toolchain:darwin_amd64",
+    "@zig_sdk//toolchain:darwin_arm64",
+    "@zig_sdk//toolchain:windows_amd64",
+    "@zig_sdk//toolchain:windows_arm64",
+)
+
+# ----------------------------------------------------
 # @rules_proto
 # ----------------------------------------------------
 
@@ -64,3 +84,14 @@ go_repositories()
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
 
 gazelle_dependencies()
+
+# ----------------------------------------------------
+# @io_bazel_rules_docker
+# ----------------------------------------------------
+
+load("@io_bazel_rules_docker//go:image.bzl", _go_image_repos = "repositories")
+load("@io_bazel_rules_docker//repositories:repositories.bzl", container_repositories = "repositories")
+
+container_repositories()
+
+_go_image_repos()

@@ -1,5 +1,6 @@
 load("@rules_proto//proto:defs.bzl", "proto_descriptor_set", "proto_library")
 load("@build_stack_grpc_starlark//rules:grpcstar_binary.bzl", "grpcstar_binary")
+load("@build_stack_grpc_starlark//rules:grpcstar_image.bzl", "grpcstar_image")
 
 proto_library(
     name = "routeguide_proto",
@@ -15,6 +16,12 @@ proto_descriptor_set(
 
 grpcstar_binary(
     name = "server",
+    descriptor = ":routeguide_proto",
+    main = "routeguide.main.star",
+)
+
+grpcstar_image(
+    name = "image",
     descriptor = ":routeguide_proto",
     main = "routeguide.main.star",
 )

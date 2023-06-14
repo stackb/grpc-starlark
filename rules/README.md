@@ -43,6 +43,40 @@ build_stack_grpc_starlark_repositories()
 
 > Not required if you already have a workspace using rules_go.
 
+A note about c++ toolchains.  If you are running more recent versions of rules_go and bazel and are seeing:
+
+```
+external/io_bazel_rules_go/BUILD.bazel:86:17: While resolving toolchains for target @io_bazel_rules_go//:cgo_context_data: No matching toolchains found for types @bazel_tools//tools/cpp:toolchain_type.
+```
+
+This is discussed more in https://github.com/bazelbuild/rules_go/issues/3470.
+
+As a workaround, you might be able provide a set of C++ toolchains using zig:
+
+```py
+# ----------------------------------------------------
+# @hermetic_cc_toolchain (zig)
+# ----------------------------------------------------
+
+load("@hermetic_cc_toolchain//toolchain:defs.bzl", zig_toolchains = "toolchains")
+
+# Plain zig_toolchains() will pick reasonable defaults. See
+# toolchain/defs.bzl:toolchains on how to change the Zig SDK version and
+# download URL.
+zig_toolchains()
+
+register_toolchains(
+    "@zig_sdk//toolchain:linux_amd64_gnu.2.28",
+    "@zig_sdk//toolchain:linux_arm64_gnu.2.28",
+    "@zig_sdk//toolchain:darwin_amd64",
+    "@zig_sdk//toolchain:darwin_arm64",
+    "@zig_sdk//toolchain:windows_amd64",
+    "@zig_sdk//toolchain:windows_arm64",
+)
+```
+
+> @hermetic_cc_toolchain is declared in `repositories.bzl`.  Additional flags in `.bazelrc` will be needed.
+
 ## `grpcstar_binary`
 
 The `grpcstar_binary` generates a standalone binary with the descriptor and
@@ -89,3 +123,38 @@ generated file //example/routeguide:server_main.go         # generated file: inp
 go_library rule //example/routeguide:server_lib            # generates: archive for go_binary.embed
 go_binary rule //example/routeguide:server                 # generates: the executable, for running!
 ```
+
+## `grpcstar_image`
+
+The `grpcstar_image` rule generates a container image.  It has usage similar to `grpcstar_binary`, although it does not use that rule directly.
+
+Example:
+
+```py
+load("@build_stack_grpc_starlark//rules:grpcstar_image.bzl", "grpcstar_image")
+
+grpcstar_image(
+    name = "image",
+    descriptor = ":routeguide_proto",
+    main = "routeguide.main.star",
+)
+```
+
+### Attributes
+
+| name         | type  | required | desciption                                                                  |
+| ------------ | ----- | -------- | --------------------------------------------------------------------------- |
+| `main`       | label | yes      | The starlark source file having a `main(ctx)` func                          |
+| `descriptor` | label | yes      | The proto_descriptor_set file                                               |
+| `executable` | label | no       | The grpcstar binary, defaults to `@build_stack_grpc_starlark//cmd/grpcstar` |
+| `base`       | label | no       | The base image to use, defaults to `@go_image_base//image`                  |
+
+The container layers will be:
+
+1. the base layer
+2. the executable
+3. the descriptor
+4. entrypoint script
+
+You are most likely to update only theqentrypoint script during development,
+making container pushes and pulls fast.
